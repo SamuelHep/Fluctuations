@@ -1,0 +1,15 @@
+PtLow  0.4
+PtHigh 2.0
+RapLow 0.94
+RapHigh 1.14
+NHitsFitMin 10
+VzMin 199.5
+VzMax 202
+VrMax 1.5
+NSigmaProtonCut 3.0
+NSigmaPionCut 0.0
+Mom 2.0
+Mass2High 1.6
+Mass2Low 0.8
+EffMultiplier 1.0
+Dca 3.0

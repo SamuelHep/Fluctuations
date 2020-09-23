@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+ <job maxFilesPerProcess="15" simulateSubmission="false">
+  <stdout URL="file:&logDir/FM_ANALYSIS_$JOBINDEX.out" />
+  <stderr URL="file:&logDir/FM_ANALYSIS_$JOBINDEX.err" /> 
+  
+  <Generator><Location>&schedDir
+  </Location></Generator>
+    
+  <input URL="filelist:&filelist"/> 
+    
+  <SandBox installer="ZIP">
+   <Package name="sched_&packageName">
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/femtoLibrary/momentCode.so</File>
+    <File>file:&inputParameter</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/RunEvents.C</File>
+    <File>file:../rootfiles/eff/fitEmbedding.root</File>
+    <File>file:../rootfiles/eff/tof_eff.root</File>
+   </Package>
+  </SandBox> 
+
+    <command>
+    
+    stardev
+    setup 64bits
+    
+    set parameterList = `basename &inputParameter`
+
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList\",\"$INPUTFILE0\"\) 
+
+    </command>
+    
+    <output fromScratch="*.root" toURL="file:&outDir"/>
+ </job> 

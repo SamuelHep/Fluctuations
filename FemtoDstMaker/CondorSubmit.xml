@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<job maxFilesPerProcess="5" simulateSubmission="false">
+
+  <stdout URL="file:&logDir/femtoOut_$JOBINDEX.out" />
+  <stderr URL="file:&logDir/femtoErr_$JOBINDEX.err" />
+
+  <Generator><Location>
+    &schedDir
+  </Location></Generator>
+
+  <input URL="catalog:star.bnl.gov?filetype=daq_reco_picoDst,trgsetupname=production_3p85GeV_fixedTarget_2018,runnumber[]19153029-19155022,production=P19ie,sname2~st_physics,storage!=hpss -distinct" nFiles="9000"/>  
+
+  <SandBox installer="ZIP">
+      <Package name="sched_fDsts"> 
+      <File>file:/star/u/sheppel/femtoDev/StFemtoMacro.C</File>
+      <File>file:/star/u/sheppel/femtoDev/StRoot/</File>
+      <File>file:&goodRunList</File>
+    </Package>
+  </SandBox>
+
+  <command>
+  
+    starver new
+    cons
+
+    set runfile = `basename &goodRunList`
+ 
+    <!-- Run the Root Macro with the options above -->
+    set nEvents = 99999999    <!-- Number of events to run over. -->
+
+    root4star -q -b StFemtoMacro.C\($nEvents,\"$FILELIST\",\"$SCRATCH/\",\"$JOBID\",\"$runfile\"\) 
+
+  </command>
+  <output fromScratch="*.root" toURL="file:&outDir"/> 
+
+   
+</job>

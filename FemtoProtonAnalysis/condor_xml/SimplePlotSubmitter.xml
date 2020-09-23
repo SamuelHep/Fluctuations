@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+ <job maxFilesPerProcess="3" simulateSubmission="false">
+  <stdout URL="file:/star/data01/pwg/sheppel/femtoAnalysis/log/simple_plot_$JOBINDEX.out" />
+  <stderr URL="file:/star/data01/pwg/sheppel/femtoAnalysis/log/simple_plot_$JOBINDEX.err" /> 
+  
+  <Generator><Location>/star/data01/pwg/sheppel/femtoAnalysis/sched/
+  </Location></Generator>
+    
+  <input URL="filelist:/direct/star+u/sheppel/femtoAnalysis/femtoDst_v1.3.list"  /> 
+    
+  <SandBox installer="ZIP">
+   <Package name="sched_simplePlots">
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/femtoLibrary/momentCode.so</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/parameter.list</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/RunSimplePlots.C</File>
+   </Package>
+  </SandBox> 
+
+    <command>
+    
+    stardev
+    setup 64bits
+
+    root -b -l -q RunSimplePlots.C\(\"$FILELIST\",\"parameter.list\",\"$INPUTFILE0\"\)
+
+    </command>
+    
+    <output fromScratch="*.root" toURL="file:/star/data01/pwg/sheppel/femtoAnalysis/simplePlots_withPro/"/>
+ </job> 

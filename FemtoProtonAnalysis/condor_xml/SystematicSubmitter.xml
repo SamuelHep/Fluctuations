@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+ <job maxFilesPerProcess="5" simulateSubmission="false">
+  <stdout URL="file:/star/data01/pwg/sheppel/femtoAnalysis/log/FM_SYS_ANALYSIS_$JOBINDEX.out" />
+  <stderr URL="file:/star/data01/pwg/sheppel/femtoAnalysis/log/FM_SYS_ANALYSIS_$JOBINDEX.err" /> 
+  
+  <Generator><Location>/star/data01/pwg/sheppel/femtoAnalysis/sched/
+  </Location></Generator>
+    
+  <input URL="filelist:/direct/star+u/sheppel/femtoAnalysis/filelists/femtoDst_v1.3.list"  /> 
+    
+  <SandBox installer="ZIP">
+   <Package name="sched_femtoAnalysis_rapScan_Cor">
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/femtoLibrary/momentCode.so</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/parameter.list</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/RunSystematicEvents.C</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/fitEmbedding.root</File>
+    <File>file:/direct/star+u/sheppel/femtoAnalysis/tof_eff.root</File>
+   </Package>
+  </SandBox> 
+
+    <command>
+    
+    stardev
+    setup 64bits
+
+    root -b -l -q RunSystematicEvents.C\(\"$FILELIST\",\"parameter.list\",\"$INPUTFILE0\"\)
+
+    </command>
+    
+    <output fromScratch="*.root" toURL="file:/star/data01/pwg/sheppel/femtoAnalysis/rapScan_Cor/"/>
+ </job> 
