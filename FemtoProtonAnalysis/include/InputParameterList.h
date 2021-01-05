@@ -14,6 +14,7 @@ class InputParameterList : public TObject
   ~InputParameterList();
 
   void Read(std::string label,double val);
+  bool ApplySystematic(TString var, double value);
   void PrintParameters();
   double PtLow();
   double PtHigh();
@@ -30,6 +31,8 @@ class InputParameterList : public TObject
   double Mom();
   double EffMultiplier();
   double Dca();
+
+  std::map<TString,double> GetParameterMap(){return _parameterMap;}
   
  private:
 

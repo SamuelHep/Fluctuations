@@ -5,7 +5,7 @@
 outDir=$1
 logDir=$2
 schedDir=$3
-goodRunsList=$4 # probably should be filelist/GoodRuns.txt
+goodRunList=$4 # probably should be filelist/GoodRuns.txt
 
 #Check to make sure there are the right number of arguments
 if [ "$#" -ne 4 ]; then

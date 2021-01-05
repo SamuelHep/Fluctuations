@@ -20,6 +20,7 @@
 #pragma link C++ defined_in "QALoop.h";
 #pragma link C++ defined_in "FlucContainer.h";
 #pragma link C++ defined_in "PileUpCorrection.h";
+#pragma link C++ defined_in "SystematicCalculation.h";
 
 
 #endif

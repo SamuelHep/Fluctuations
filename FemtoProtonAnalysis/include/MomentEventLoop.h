@@ -11,6 +11,16 @@ class CumulantProfileContainer;
 class ProtonEfficiency;
 class TRandom3;
 
+int MomentEventLoopLocal(
+			 TChain * tc,
+			 long int nentries,
+			 InputParameterList & pl,
+			 ProtonEfficiency * eff,
+			 TRandom3 * rand,
+			 int nBootstraps,
+			 TString outfileName
+			 );
+
 int MomentEventLoop(
 		    TChain * tc,
 		    long int nentries,

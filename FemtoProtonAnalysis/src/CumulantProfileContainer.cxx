@@ -94,12 +94,24 @@ CumulantProfileContainer::CumulantProfileContainer(int iName)
 
 CumulantProfileContainer::CumulantProfileContainer(int iName,TString label,TH1F * multHist,LongDouble_t Cumulants[300][5],int MaxMult)
 {
-  
-  _gr_N = new TGraphErrors();  _gr_N->SetName(TString::Format("Ngr_%i_%s",iName,label.Data()));
-  _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName(TString::Format("Q1gr_%i_%s",iName,label.Data()));
-  _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName(TString::Format("Q2gr_%i_%s",iName,label.Data()));
-  _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName(TString::Format("Q3gr_%i_%s",iName,label.Data()));
-  _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName(TString::Format("Q4gr_%i_%s",iName,label.Data()));
+
+  if ( iName == kPrimary )
+    {
+      _gr_N = new TGraphErrors();  _gr_N->SetName(TString::Format("Ngr_%s",label.Data()));
+      _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName(TString::Format("Q1gr_%s",label.Data()));
+      _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName(TString::Format("Q2gr_%s",label.Data()));
+      _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName(TString::Format("Q3gr_%s",label.Data()));
+      _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName(TString::Format("Q4gr_%s",label.Data()));
+    }
+  else 
+    {
+      _gr_N = new TGraphErrors();  _gr_N->SetName(TString::Format("Ngr_%i_%s",iName,label.Data()));
+      _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName(TString::Format("Q1gr_%i_%s",iName,label.Data()));
+      _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName(TString::Format("Q2gr_%i_%s",iName,label.Data()));
+      _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName(TString::Format("Q3gr_%i_%s",iName,label.Data()));
+      _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName(TString::Format("Q4gr_%i_%s",iName,label.Data()));
+    }
+
   _gr_binned_Q1 = NULL;
   _gr_binned_Q2 = NULL;
   _gr_binned_Q3 = NULL;
@@ -136,23 +148,41 @@ CumulantProfileContainer::CumulantProfileContainer(int iName,TString label,TH1F 
 CumulantProfileContainer::CumulantProfileContainer(TFile *f,int iName)
 {
 
-  for (int i=0;i<23;i++)
+  if ( iName == kPrimary )
     {
-      TString prof_name = TString::Format("Profile_%s_%i",IndexToName(i).Data(),iName);
-      TProfile * temp = (TProfile*) f->Get(prof_name);
-      _prof_vec.push_back(temp);
-    }
+      for (int i=0;i<23;i++)
+	{
+	  TString prof_name = TString::Format("Profile_%s",IndexToName(i).Data());
+	  TProfile * temp = (TProfile*) f->Get(prof_name);
+	  _prof_vec.push_back(temp);
+	}
 
-  _gr_N = new TGraphErrors();  _gr_N->SetName(TString::Format("Ngr_%i",iName));
-  _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName(TString::Format("Q1gr_%i",iName));
-  _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName(TString::Format("Q2gr_%i",iName));
-  _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName(TString::Format("Q3gr_%i",iName));
-  _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName(TString::Format("Q4gr_%i",iName));
+      _gr_N = new TGraphErrors();  _gr_N->SetName("Ngr");
+      _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName("Q1gr");
+      _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName("Q2gr");
+      _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName("Q3gr");
+      _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName("Q4gr");
+      
+    }
+  else{
+    for (int i=0;i<23;i++)
+      {
+	TString prof_name = TString::Format("Profile_%s_%i",IndexToName(i).Data(),iName);
+	TProfile * temp = (TProfile*) f->Get(prof_name);
+	_prof_vec.push_back(temp);
+      }
+  
+    _gr_N = new TGraphErrors();  _gr_N->SetName(TString::Format("Ngr_%i",iName));
+    _gr_Q1 = new TGraphErrors(); _gr_Q1->SetName(TString::Format("Q1gr_%i",iName));
+    _gr_Q2 = new TGraphErrors(); _gr_Q2->SetName(TString::Format("Q2gr_%i",iName));
+    _gr_Q3 = new TGraphErrors(); _gr_Q3->SetName(TString::Format("Q3gr_%i",iName));
+    _gr_Q4 = new TGraphErrors(); _gr_Q4->SetName(TString::Format("Q4gr_%i",iName));
+  }
+  
   _gr_binned_Q1 = NULL;
   _gr_binned_Q2 = NULL;
   _gr_binned_Q3 = NULL;
   _gr_binned_Q4 = NULL;
-
 
   _gr_binned_K1 = NULL;
   _gr_binned_K2 = NULL;
@@ -161,7 +191,6 @@ CumulantProfileContainer::CumulantProfileContainer(TFile *f,int iName)
   _gr_K2_K1 = NULL;
   _gr_K3_K1 = NULL;
   _gr_K4_K1 = NULL;
-
 
   _gr_vec.push_back(_gr_N);
   _gr_vec.push_back(_gr_Q1);
@@ -261,7 +290,6 @@ void CumulantProfileContainer::ReBinAllGraphs(std::vector<int> binEdges, std::ve
   _gr_Q2_Q1 = RatioGraphs(_gr_binned_Q2,_gr_binned_Q1);
   _gr_Q3_Q2 = RatioGraphs(_gr_binned_Q3,_gr_binned_Q2);
   _gr_Q4_Q2 = RatioGraphs(_gr_binned_Q4,_gr_binned_Q2);
-
   
   _gr_binned_K1 = CalcK( 1 );
   _gr_binned_K2 = CalcK( 2 );
@@ -407,7 +435,7 @@ TGraphErrors * CumulantProfileContainer::CalcK3()
       double xerr = _gr_binned_Q1->GetX()[i];
       double yerr = _gr_binned_Q1->GetY()[i];
 
-      double K3 = Q3 - Q1 - -3*(Q2 - Q1);
+      double K3 = Q3 - 3*Q2 + 2*Q1;
 
       gr->SetPoint(gr->GetN(),x,K3);
       gr->SetPointError(gr->GetN()-1,xerr,yerr);
@@ -453,9 +481,11 @@ TGraphErrors * CumulantProfileContainer::CalcK4()
       double xerr = _gr_binned_Q1->GetX()[i];
       double yerr = _gr_binned_Q1->GetY()[i];
 
-      double K2 = Q2 - Q1;
-      double K3 = Q3 - Q1 - -3*K2;
-      double K4 = Q4 - Q1 - 7*K2 - 6*K3;
+      //      double K2 = Q2 - Q1;
+      //      double K3 = Q3 - Q1 - -3*K2;
+      //      double K4 = Q4 - Q1 - 7*K2 - 6*K3;
+
+      double K4 = -6*Q1 + 11*Q2 -6*Q3 + Q4;
 
       gr->SetPoint(gr->GetN(),x,K4);
       gr->SetPointError(gr->GetN()-1,xerr,yerr);
@@ -523,8 +553,8 @@ TGraphErrors * CumulantProfileContainer::ReBin(std::vector<int> &binEdges,std::v
       
       for (int j=0;j<x.size();j++)
 	{
-	  if ( x[j] > binEdges[i] && x[j] < binEdges[i+1] )
-	    {
+	  if ( x[j] >= binEdges[i] && x[j] < binEdges[i+1] )
+		{
 	      weighted_sum += y[j]*w[j];
 	      weight += w[j];
 	    }

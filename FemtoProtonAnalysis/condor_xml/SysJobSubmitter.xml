@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+ <job maxFilesPerProcess="1" simulateSubmission="false">
+  <stdout URL="file:&logDir;/FM_ANALYSIS_$JOBINDEX.out" />
+  <stderr URL="file:&logDir;/FM_ANALYSIS_$JOBINDEX.err" /> 
+  
+  <Generator><Location>&schedDir;
+  </Location></Generator>
+    
+  <input URL="filelist:&filelist;"/> 
+    
+  <SandBox installer="ZIP">
+   <Package name="sched_&packageName;">
+    <File>file:&workDir;/lib/momentCode.so</File>
+    <File>file:&inputParameter0;</File>
+    <File>file:&inputParameter1;</File>
+    <File>file:&inputParameter2;</File>
+    <File>file:&inputParameter3;</File>
+    <File>file:&inputParameter4;</File>
+    <File>file:&inputParameter5;</File>
+    <File>file:&workDir;/macros/RunEvents.C</File>
+    <File>file:&workDir;/rootfiles/eff/fitEmbedding.root</File>
+    <File>file:&workDir;/rootfiles/eff/tof_eff.root</File>
+   </Package>
+  </SandBox> 
+
+    <command>
+    
+    stardev
+    setup 64bits
+    
+    set parameterList0 = `basename &inputParameter0;`
+    set parameterList1 = `basename &inputParameter1;`
+    set parameterList2 = `basename &inputParameter2;`
+    set parameterList3 = `basename &inputParameter3;`
+    set parameterList4 = `basename &inputParameter4;`
+    set parameterList5 = `basename &inputParameter5;`
+
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList0\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList1\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList2\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList3\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList4\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList5\",\"$INPUTFILE0\"\) 
+
+    </command>
+    
+    <output fromScratch="*.root" toURL="file:&outDir;"/>
+ </job> 

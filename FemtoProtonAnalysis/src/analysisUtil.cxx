@@ -188,7 +188,7 @@ int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec, TGraphE
       double y = gr->GetY()[i];
 
       double yerr = gr_err->GetY()[i];
-      yerr = yerr/sqrt(140000000);
+      yerr = yerr/sqrt(140000000); //What is going on here? Seems harmless tho...
 
       //      cout << "original (x,y) = " << x << ", " << y << endl;
 
@@ -278,6 +278,58 @@ TChain * GetTChainFromList(TString listname, TString treename)
 }
 
 
+void ParseSysFile(TString nominal_file_name,TString list_of_sys_file_name, TString nominal_qualifier)
+{
+
+  ifstream list_of_sys( list_of_sys_file_name );
+  if ( !list_of_sys )
+    {
+      cerr << "Unable to open sys file";
+      exit(1);
+    } 
+  
+  string line;
+  while ( getline( list_of_sys, line ) )
+    {
+      istringstream iss(line);
+      string syslabel, var;
+      double value;
+      if ( !(iss >> syslabel >> var >> value) ) {break;}
+      GenerateSysFile( nominal_file_name , nominal_qualifier, syslabel, var, value );
+    }
+
+}
+
+void GenerateSysFile(TString nominal_file_name, TString nominal_qualifier, TString sys_label, TString var, double value)
+{
+
+  //First get the nominal input parameter list
+  InputParameterList input_par = ReadInputFile( nominal_file_name );
+  
+  //Apply Systematic cut
+  if ( !input_par.ApplySystematic( var , value ) ) 
+    {    
+      cerr << "Unable to apply systematic to given variable";
+      exit(1);
+    }
+      
+  TString sys_name = nominal_file_name.ReplaceAll( nominal_qualifier , sys_label );
+
+  WriteInputFile( input_par , sys_name );
+ 
+}
+
+void WriteInputFile(InputParameterList parList,TString outfilename)
+{
+
+  ofstream outFile(outfilename);
+  for (auto &param : parList.GetParameterMap())
+    {
+      outFile << param.first << " " << param.second << endl;
+    }
+  outFile.close();
+}
+
 InputParameterList ReadInputFile(TString inputfile)
 {
 
@@ -304,16 +356,46 @@ InputParameterList ReadInputFile(TString inputfile)
 }
 
 
-void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename, Bool_t urqmdHists)
+void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename, Bool_t urqmdHists,int shift_cut)
 {
   
-  std::vector<double> binLabels = {118,170,240,308 ,395};
-  std::vector<int> binEdges = {12,19,27,39,47 ,90};
+  cout << "INFILE  =" << infilename << endl;
+  cout << "OUTFILE =" << outfilename << endl;
+  cout << "HISTFILE=" << histfilename << endl;
+
+
+  /*  std::vector<double> binLabels = { 10, 21, 32, 50, 74, 105, 149, 251};
+  std::vector<int> binEdges     = {2, 5, 8, 13, 24, 29, 41, 50, 80};
+  
+  std::vector<double> binLabels = {39, 51, 64, 81, 100, 121, 146,  176, 210  , 248, 293, 345};
+  std::vector<int> binEdges     = {2, 5, 8, 11,  13, 16, 20, 24, 29, 34, 41, 50, 90};
+  */
+  std::vector<double> binLabels = {     47,   70,    107, 157, 219, 282,  326};
+    std::vector<int> binEdges     = { 4 + shift_cut,    6 + shift_cut,    10 + shift_cut,    16 + shift_cut,   25 + shift_cut,  38 + shift_cut, 48 + shift_cut, 80 + shift_cut};
+  //  std::vector<int> binEdges     = { 5,    7,    11,    18,   26,  40, 49,   90}; //Up one
+  //  std::vector<int> binEdges     = { 3,    5,    9,    16,   24,  38,  47,   90}; //Down one
+
 
   std::vector<CumulantProfileContainer*> cpc_vec;
   std::vector<CumulantProfileContainer*> cpc_uncor_vec;
 
-  for( int iBs=0;iBs<20;iBs++ )
+  cout << "Run over primary cumulant profiles" << endl;
+
+  //Run the correction for primary
+  PileUpCorrection * puCorr_prime = new PileUpCorrection();
+  if (!urqmdHists) puCorr_prime->LoadPileUpHistograms( histfilename );
+  else puCorr_prime->LoadURQMDHistograms( histfilename );
+  CumulantProfileContainer * cpc_uncor_prime = puCorr_prime->LoadCumulant(infilename,kPrimary);
+  CumulantProfileContainer * cpc_prime = puCorr_prime->CorrectionForMultRange(kPrimary,20,100);
+  
+  cpc_prime->SetGraph(0,cpc_uncor_prime->GetWeightGraph());
+  cpc_prime->ReBinAllGraphs(binEdges,binLabels);  
+  cpc_uncor_prime->ReBinAllGraphs(binEdges,binLabels);  
+
+  cout << "Run over bootstrap cumulant profiles" << endl;
+
+  //Run the correction for the bootstraps
+  for( int iBs=0;iBs<10;iBs++ )
     {
       PileUpCorrection * puCorr = new PileUpCorrection();
       if (!urqmdHists) puCorr->LoadPileUpHistograms( histfilename );
@@ -332,15 +414,15 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
 
   std::vector<TGraphErrors*> compare_graphs_cor;
   std::vector<TGraphErrors*> compare_graphs_uncor;
-  ComputeBootstrapErrors(cpc_vec[0],cpc_vec, compare_graphs_cor);
-  ComputeBootstrapErrors(cpc_uncor_vec[0],cpc_uncor_vec, compare_graphs_uncor);
+  ComputeBootstrapErrors(cpc_prime,cpc_vec, compare_graphs_cor);
+  ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec, compare_graphs_uncor);
 
   TFile * outfile = new TFile(outfilename,"recreate");
 
-  for( int i=0;i<cpc_vec[0]->NGraphs();i++)
+  for( int i=0;i<cpc_prime->NGraphs();i++)
     {
-      TGraphErrors * gr = cpc_vec[0]->GetNGraph(i);
-      TGraphErrors * gr_uncor = cpc_uncor_vec[0]->GetNGraph(i);
+      TGraphErrors * gr = cpc_prime->GetNGraph(i);
+      TGraphErrors * gr_uncor = cpc_uncor_prime->GetNGraph(i);
       gr->Write();
       gr_uncor->Write();
       delete gr;

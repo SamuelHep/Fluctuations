@@ -5,7 +5,7 @@
 using namespace std;
 
 ClassImp(InputParameterList)
-
+  
 //_______________________________________
 InputParameterList::InputParameterList()
 {
@@ -48,6 +48,46 @@ void InputParameterList::Read(std::string label,double val)
 {
   TString str = static_cast<TString>(label);
   _parameterMap[str] = val; 
+}
+
+//_______________________________________
+bool InputParameterList::ApplySystematic(TString var, double value)
+{
+
+  if ( !var.CompareTo("NHitsFitMin") )
+    {
+      _parameterMap["NHitsFitMin"] = value;
+      return true;
+    }
+
+  if ( !var.CompareTo("EffMultiplier") )
+    {
+      _parameterMap["EffMultiplier"] = value;
+      return true;
+    }
+
+  if ( !var.CompareTo("Mass2Shift") )
+    {
+      _parameterMap["Mass2High"] = _parameterMap["Mass2High"] + value;
+      _parameterMap["Mass2Low"]  = _parameterMap["Mass2Low"] + value;
+      return true;
+    }
+
+  if ( !var.CompareTo("RapLowShift") )
+    {
+      _parameterMap["RapLow"] = _parameterMap["RapLow"] + value;
+      return true;
+    }
+
+  if ( !var.CompareTo("RapShift") )
+    {
+      _parameterMap["RapLow"] = _parameterMap["RapLow"] + value;
+      _parameterMap["RapHigh"] = _parameterMap["RapHigh"] + value;
+      return true;
+    }
+
+  return false;
+
 }
 
 //_______________________________________

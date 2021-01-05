@@ -27,9 +27,13 @@ std::vector<TGraphErrors*> MakeSysComparisonPlots(
 					     double sysDelta
 						  );
 
+void ParseSysFile(TString nominal_file_name,TString list_of_sys_file_name, TString nominal_qualifier);
+void GenerateSysFile(TString nominal_file_name, TString nominal_qualifier, TString sys_label, TString var, double value);
+void WriteInputFile(InputParameterList parList,TString outfilename);
+
 InputParameterList ReadInputFile(TString inputfile);
 
-void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename,Bool_t urqmdHists);
+void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename,Bool_t urqmdHists, int shift_cut=0);
 
 int GetRunIndex( std::vector<int> &runvec, int runNum);
 std::pair<bool,bool> PileUpBadEvent(int fxt,double nmip,double pipdu);

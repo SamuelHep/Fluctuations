@@ -103,27 +103,34 @@ Int_t StFemtoDstMaker::Make()
 
   for (Int_t iTrig=0; iTrig<nTrig; iTrig++)
     {
-      if ( event->triggerIds().at(iTrig) == 620052)
+      //Check if triggerId = 620052
+      if ( event->triggerIds().at(iTrig) == 620052 )
 	{
 	goodTrig=true;
 	}
+
+      //Check if triggerId = 620053
+      if ( event->triggerIds().at(iTrig) == 620053 )
+	{
+	goodTrig=true;
+	}
+
     }  
+  //Skip all other triggers
   if (goodTrig==false) return kStOK;
 
   //Vertex Cut
+  TVector3 pVtx = event->primaryVertex();
   Double_t vx = event->primaryVertex().X();
   Double_t vy = event->primaryVertex().Y();
   Double_t vz = event->primaryVertex().Z();
   
+  //wide vertex cut
   if ( vz < 195.0 || vz > 205.0 ) return kStOK;
-
   double vr = TMath::Sqrt( vx*vx + (vy+2)*(vy+2) );
-
   if ( vr > 5 ) return kStOK;
 
-  //  int epdPileUpCut =0;
-  //  int tofPileUpCut =0;  
-  //  mPileUp->PileUpEvent(mPicoDst, epdPileUpCut, tofPileUpCut);
+  //Get NMIP
   Float_t epdNMip = mEpdPileUpRejection->EpdNMip(mPicoDst);
 
   std::pair<int,int> FxtMult_PiPDu_pair  = mEpdPileUpRejection->FxtMultAndPiPDuCount(mPicoDst);
@@ -142,6 +149,7 @@ Int_t StFemtoDstMaker::Make()
 
   Bool_t fullEvent = true;//( fullEventCounter % 10 == 0 ) ? true : false;
   fullEventCounter++;
+  float mBField  = event->bField();
 
   for(unsigned int trackIndex=0; trackIndex< mPicoDst->numberOfTracks();trackIndex++)
     {
@@ -150,11 +158,20 @@ Int_t StFemtoDstMaker::Make()
 
       //Only Primary Tracks
       if ( !mPicoTrack->isPrimary() ) continue;
+
       //Tracks dca cut
       Float_t dca    = TMath::Abs( mPicoTrack->gDCA(vx,vy,vz) );
       Float_t dcaX  = mPicoTrack->gDCAx(vx);
       Float_t dcaY  = mPicoTrack->gDCAy(vy);
       Float_t dcaZ   = mPicoTrack->gDCAz(vz);
+
+      //Lets check the difference
+      StPicoPhysicalHelix helix_yu = mPicoTrack->helix(mBField);
+      Float_t dca_yu = helix_yu.geometricSignedDistance(pVtx);
+      if(dca_yu < 0) dca_yu = fabs(dca);
+
+      //      Float_t diff = dca - dca_yu;
+      //      if( fabs(diff)>0.00001) cout << "DCA = " << dca << " Yu's DCA = " << dca_yu << " DIFF = " << dca-dca_yu << endl; 
 
       if ( dca > 3.0 ) continue;
       

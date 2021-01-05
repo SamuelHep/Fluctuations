@@ -194,9 +194,14 @@ bool PileUpCorrection::LoadPileUpHistograms(TString filename)
   TFile * f = new TFile(filename,"read");
 
   // Multiplicity dist, measured, true and reponse matrix
+  /*
   hMult_true = (TH1F*)f->Get("FxtMult3_true"); // True
   hMult = (TH1F*)f->Get("FxtMult3");     // All
   hRM = (TH2F*)f->Get("FxtMult3_RM"); //// response matrix 
+  */
+  hMult_true = (TH1F*)f->Get("hMC_true"); // True
+  hMult = (TH1F*)f->Get("hMC_all_final");     // All
+  hRM = (TH2F*)f->Get("hRM_final"); //// response matrix 
 
   if ( hMult_true && hMult && hRM ) return true;
   else return false;
@@ -252,7 +257,7 @@ CumulantProfileContainer * PileUpCorrection::CorrectionForMultRange(int iName,in
   for (int iMult=0; iMult<maxMult; iMult++)
     {
       const LongDouble_t binevent = hMult_true->GetBinContent(iMult+1);
-      if(binevent<cutoff) continue;
+      //      if(binevent<cutoff) continue;
       
       //If below trig efficiency cut, set corrected cumulants to measured cumulants
       if (iMult<trgMult)
@@ -317,12 +322,12 @@ CumulantProfileContainer * PileUpCorrection::CorrectionForMultRange(int iName,in
 	  fcor.SetMoments(n,mu_cor[iMult][n]);
 	}
 
-      cout <<"======================"<< endl;
-      cout <<"Multiplicity #"<< iMult << endl;
+      //      cout <<"======================"<< endl;
+      //      cout <<"Multiplicity #"<< iMult << endl;
       for(int n=1; n<=r; n++)
 	{
 	  C_cor[iMult][n] = fcor.GetCumulant(n);
-	  cout << n <<" "<< C[iMult][n] <<" "<< C_cor[iMult][n]  << endl;
+	  //	  cout << n <<" "<< C[iMult][n] <<" "<< C_cor[iMult][n]  << endl;
 	  C[iMult][n] = C_cor[iMult][n]; // replace measured cumulant to corrected cumulant
 	}
 

@@ -10,6 +10,8 @@
 #include "TGraphErrors.h"
 #include "TProfile.h"
 
+const static int kPrimary = -999;
+
 class CumulantProfileContainer : public TObject {
 
  public:

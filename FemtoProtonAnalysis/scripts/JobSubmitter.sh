@@ -45,4 +45,8 @@ if [ ! -e $inputParameter ]; then
     exit 1
 fi
 
-star-submit-template -template ../condor_xml/CondorSubmit.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,inputParameter=$inputParameter,packageName=$inputPackageName
+
+workDir=`pwd`/..
+
+#echo $packageName
+star-submit-template -template ../condor_xml/JobSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,inputParameter=$inputParameter,packageName=$packageName,workDir=$workDir

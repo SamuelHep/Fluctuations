@@ -4,7 +4,7 @@ void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed
 {
 
   gSystem->Load("momentCode.so");
-  //gSystem->Load("femtoLibrary/momentCode.so");
+  //  gSystem->Load("../lib/momentCode.so");
 
   //Get Number from filename
   TObjArray * tokens = InputFile_forSeed.Tokenize("_");
@@ -45,7 +45,7 @@ void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed
 			     pl, // Parameter list
 			     eff,  // efficiency 
 			     rand, // trandom3
-			     20, // number of bootstraps
+			     10, // number of bootstraps
 			     filename // outfile name 
 			      ); //Only Calculates the moment profiles
 
