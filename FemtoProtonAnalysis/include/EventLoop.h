@@ -48,4 +48,7 @@ int EventLoopSimPoisson(
 			);
 
 
+
+void RunSim(TString filename);
+
 #endif

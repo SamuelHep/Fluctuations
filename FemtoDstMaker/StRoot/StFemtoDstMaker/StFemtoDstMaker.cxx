@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <cstdio>
 #include <vector>
@@ -10,6 +11,8 @@
 #include "TBranch.h"
 #include "TString.h"
 #include "TVector3.h"
+#include "TF1.h"
+#include "TH1D.h"
 
 #include "StMaker.h"
 #include "StPicoEvent/StPicoBTofPidTraits.h"
@@ -116,7 +119,7 @@ Int_t StFemtoDstMaker::Make()
 	}
 
     }  
-  //Skip all other triggers
+  //Skip0 all other triggers
   if (goodTrig==false) return kStOK;
 
   //Vertex Cut
@@ -125,6 +128,7 @@ Int_t StFemtoDstMaker::Make()
   Double_t vy = event->primaryVertex().Y();
   Double_t vz = event->primaryVertex().Z();
   
+
   //wide vertex cut
   if ( vz < 195.0 || vz > 205.0 ) return kStOK;
   double vr = TMath::Sqrt( vx*vx + (vy+2)*(vy+2) );
@@ -141,6 +145,7 @@ Int_t StFemtoDstMaker::Make()
   
   int refmult=0;
   int refmult3=0;
+  double nCharge=0;
 
   std::vector< StFemtoTrack > trkArray;
 
@@ -150,6 +155,7 @@ Int_t StFemtoDstMaker::Make()
   Bool_t fullEvent = true;//( fullEventCounter % 10 == 0 ) ? true : false;
   fullEventCounter++;
   float mBField  = event->bField();
+
 
   for(unsigned int trackIndex=0; trackIndex< mPicoDst->numberOfTracks();trackIndex++)
     {
@@ -173,6 +179,7 @@ Int_t StFemtoDstMaker::Make()
       //      Float_t diff = dca - dca_yu;
       //      if( fabs(diff)>0.00001) cout << "DCA = " << dca << " Yu's DCA = " << dca_yu << " DIFF = " << dca-dca_yu << endl; 
 
+
       if ( dca > 3.0 ) continue;
       
       //Remove broken tracks
@@ -183,12 +190,7 @@ Int_t StFemtoDstMaker::Make()
       //Only use tracks below -3 sigma of proton band
       refmult++;
 
-      if ( mPicoTrack->nSigmaProton() < -3 )
-	{
-	  refmult3++;
-	} 
-
-      //Float_t pt = mPicoTrack->pMom().Perp();
+      Float_t pt = mPicoTrack->pMom().Perp();
       Float_t q = mPicoTrack->charge();
       Float_t px = mPicoTrack->pMom().X();
       Float_t py = mPicoTrack->pMom().Y();
@@ -196,11 +198,29 @@ Int_t StFemtoDstMaker::Make()
       Float_t nSigProton = mPicoTrack->nSigmaProton();
       Float_t nSigPion = mPicoTrack->nSigmaPion();
 
+      Float_t protonRapidity = fabs( ParticleRapidity( pt, pz, p_m ) );
+      Float_t pionRapidity   = fabs( ParticleRapidity( pt, pz, pi_m ) );
       Float_t tofProtonMass =-999;
+      Float_t eta = 0.5 * TMath::Log( (mPicoTrack->pMom().Mag() + mPicoTrack->pMom().Z()) / (mPicoTrack->pMom().Mag() - mPicoTrack->pMom().Z()) );
+
+
+      if ( mPicoTrack->nSigmaProton() < -3 )
+	{
+	  refmult3++;
+	  double mom = sqrt( px*px + py*py + pz*pz );
+	  if ( mom > 0.2 && mom < 1.0 && eta < -0.01 && eta > -2.0)
+	    {
+	      double eff = GetPionEfficiency( pionRapidity, sqrt(px*px + py*py) );
+	      nCharge += ( eff > 0 ) ? 1.0/eff : 0; 
+	    }
+	} 
+
 
       Float_t T0=-999;
       Float_t T0_p=-999;
       Float_t T0_pi=-999;
+
+
 
       //Check if full event is turned off and then exclude non proton particles
       if (!fullEvent && (fabs(nSigProton) > 3.2) ) continue;
@@ -254,10 +274,12 @@ Int_t StFemtoDstMaker::Make()
 
     }
 
+  cout << " nCharge = " << nCharge << endl;
+
   //Fill Event Varialbles 
   mFemtoEvent->SetRunID(runID);
   mFemtoEvent->SetFxtMult(refmult);
-  mFemtoEvent->SetFxtMultTofMatch(gMult);
+  mFemtoEvent->SetFxtMultTofMatch(nCharge);
   mFemtoEvent->SetFxtMult3(refmult3);
   
   mFemtoEvent->SetVr(vr);
@@ -298,7 +320,7 @@ int StFemtoDstMaker::GetRunIndex(int runId){
 
   int index = -999;
   
-  for(std::vector<int>::iterator iRun = run_vec.begin() ; iRun != run_vec.end(); ++iRun)
+  for(std::vector<int>::iterator iRun = run_vec.begin() ; iRun != run_vec.end(); iRun++)
     {
 
     if ( runId == (*iRun) ) {
@@ -351,4 +373,77 @@ Float_t StFemtoDstMaker::GetT0(StPicoTrack const* const trk, TVector3 const& vtx
 
    return beta1 - beta2;
 }
+
+Double_t StFemtoDstMaker::ParticleRapidity( Double_t pt, Double_t pz, Double_t mass )
+{
+  Double_t energy = sqrt( pow(pt,2) + pow(pz,2) + pow(mass,2) );
+  return 0.5 * log( ( energy + pz) / (energy - pz) );
+}
+
+
+int StFemtoDstMaker::LoadTPCEff(TString filename)
+{
+
+  TFile * f = new TFile(filename,"read");
+
+  std::vector<TH1D*> h_vec(100,(TH1D*) NULL);
+  std::vector<TF1*> f_vec(100,(TF1*) NULL);
+
+  cout << "LoadTPCEff() loading histograms and fits ..." << endl;
+  for (int i=3;i<97;i++) 
+    {
+      h_vec[i] = (TH1D*) f->Get(TString::Format("slice_bin%i",i).Data());
+      f_vec[i] = (TF1*) f->Get(TString::Format("f_slice_bin%i",i).Data());
+    }
+
+  cout << " hists and fits loaded" << endl;
+
+  _h1d_eff = h_vec;
+  _tf1_eff = f_vec;
+
+  return 0;
+
+}
+
+int StFemtoDstMaker::GetPionEffBin( double y )
+{
+  float delta=0.02;
+  float start=3*0.02;
+
+  for ( int i =3; i < 97; i++)
+    {
+      if ( y >= start && y < start+delta ) return i;
+      else start += delta;
+    }
+  
+  return -1;
+
+}
+
+double StFemtoDstMaker::GetPionEfficiency(double y, double pt)
+{
+
+  //Get the index for the correct histogram and fit
+  int index = GetPionEffBin( y );
+  if (index<0) return -1;
+
+  //  cout << "index=" << index << endl;
+
+  TH1D * h = _h1d_eff[index];
+  TF1 * f = _tf1_eff[index];
+  
+  if ( !h ) cout << "hist doesnt exist" << endl;
+  if ( !f ) cout << "fit doesnt exist" << endl;
+
+  float xMin = h->GetBinLowEdge(h->FindFirstBinAbove(0.01));
+  float xMax = 2.0;
+  if ( pt <= xMin || pt >= xMax ) return -1;
+
+  double eff = f->Eval( pt );
+
+  if ( eff > 1.0 || eff < 0.01 ) return -1; //Set to 1% cut off
+  
+  return eff;
+}
+
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-FILELIST=../input_parameters/smallSample.list
-parameterList=../input_parameters/parameter.list
-outfilename=../rootfiles/cumulants/smallSample_out.root
+FILELIST=../input_parameters/femto_3GeV_test.list
+parameterList=../input_parameters/parameter_n0p5_0_norm.list
+outfilename=test_bootstrap.root
 
 root -b -l -q ../macros/RunEventsLocal.C\(\"$FILELIST\",\"$parameterList\",\"$outfilename\"\)

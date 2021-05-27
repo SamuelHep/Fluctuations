@@ -34,7 +34,7 @@ class PileUpCorrection : public TObject
   //  const int ORDER = 4;
   //  const int NMULT = 9;
 
-  enum{NMULT = 300, ORDER =4, NCENT= 9};
+  enum{NMULT = 300, ORDER =6, NCENT= 9};
 
   // measured cumulants and moments
   LongDouble_t C[NMULT][ORDER+1];

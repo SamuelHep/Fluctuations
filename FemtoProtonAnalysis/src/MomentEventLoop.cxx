@@ -50,29 +50,39 @@ int MomentEventLoopLocal(
   
   MomentEventLoop( tc , nentries , pl , cpc, cpc_vec , eff , rand); //Only Calculates the moment profiles
 
+  cpc->MomentsToCumulants();
+
   //Rebin the graphs... Also calculate cumulants
   cpc->ReBinAllGraphs(binEdges,binLabels);  
 
   //Do the same thing for the bootstraps
   for( int iBs=0;iBs<nBootstraps;iBs++ )
     {
+      cpc_vec[iBs]->MomentsToCumulants();
       cpc_vec[iBs]->ReBinAllGraphs(binEdges,binLabels);  
     }
 
   //Compute bootstraps
-  std::vector<TGraphErrors*> compare_graphs;
-  ComputeBootstrapErrors(cpc,cpc_vec, compare_graphs);
+  ComputeBootstrapErrors(cpc,cpc_vec);
 
   TFile * outfile = new TFile(outfileName,"recreate");
   outfile->cd();
 
-  //Save each graph
-  for( int i=0;i<cpc->NGraphs();i++)
+  //Save each graph  
+  for ( auto & key_graph : cpc->GetGraphMap() )
     {
-      TGraphErrors * gr = cpc->GetNGraph(i);
-      gr->Write();
-      delete gr;
+      key_graph.second->Write();
     }
+
+
+  for( int iBs=0;iBs<nBootstraps;iBs++ )
+    {
+      for ( auto & key_graph : cpc_vec[iBs]->GetGraphMap() )
+	{
+	  key_graph.second->Write();
+	}
+    }
+
 
   outfile->Close();
 
@@ -103,20 +113,18 @@ int MomentEventLoopPrintToFile(
   TFile * outfile = new TFile(outfileName,"recreate");
   outfile->cd();
 
-  // Save primary profile vec
-  vector<TProfile*> prof_vec = cpc->GetProfileVec();
-  for (auto &p : prof_vec)
+  // Save primary profiles
+  for (auto &key_profile : cpc->GetProfileMap() )
     {
-      p->Write();
+      key_profile.second->Write();
     }
 
   // Save bootstrap profiles
   for ( int iBootstraps=0;iBootstraps<nBootstraps;iBootstraps++)
     {
-      vector<TProfile*> prof_vec_bs = cpc_vec[iBootstraps]->GetProfileVec();
-      for (auto &p : prof_vec_bs)
+      for (auto &key_profile : cpc_vec[iBootstraps]->GetProfileMap() )
 	{
-	  p->Write();
+	  key_profile.second->Write();
 	}
     }
 
@@ -154,6 +162,7 @@ int MomentEventLoop(
   for (int iEntry=0;iEntry<nentries;iEntry++)
     {
       
+      //      cout << iEntry << endl;
       tc->GetEntry(iEntry);
       
       //Get Event Variables
@@ -161,7 +170,10 @@ int MomentEventLoop(
       double vr   = event->GetVxy();
       double fxt3 = event->GetFxtMult3();
       double fxt  = event->GetFxtMult();
+      double fxttof = event->GetFxtMultTofMatch();      
       
+      //      double centBin3 = CentBin3( fxt3 );
+      //      if ( centBin3 < 0 ) continue;
       //Make Event Cuts
       if ( vz > pl.VzMax() ) continue;
       if ( vz < pl.VzMin() ) continue;
@@ -169,10 +181,6 @@ int MomentEventLoop(
 
       double nmip = event->GetNMip();
       double pipdu = event->GetPiPDu();
-      //    pair<bool,bool> epd_tof = PileUpBadEvent((int)fxt,nmip,pipdu);
-      //    if ( !epd_tof.first || !epd_tof.second ) continue;
-
-      //      if (fxt >= 210) continue;
      
       //Track Vector to be filled 
       vector<pair<int,double>> track_eff_pair_vec;
@@ -244,194 +252,30 @@ int MomentEventLoop(
 	  
 	}
     
-      /*
-      //Check
-
-      if ( fxt3 < 300 )
-	{
-	  int Np = track_eff_pair_vec.size();
-	  h_mult->Fill( (int) fxt3 );
-	  h_p->SetBinContent( h_p->FindBin( fxt3 ) , h_p->GetBinContent(  h_p->FindBin( fxt3 ) ) + Np );
-	  h_protons[ (int) fxt3 ]->Fill( (int) track_eff_pair_vec.size() );
-	}
-      */
-
       //Where the factorial moment calculation takes place
-      vector<vector<double>> qrs = make_all_q_s( track_eff_pair_vec, 4, 4);
+      vector<vector<long double>> qrs = make_all_q_s( track_eff_pair_vec, 6, 6);
       
       //For boostrap, the probability that the event is filled N times is poisson.
       //Draw from poission distribution and fill N times
       int nFill = 0;
 
-      cpc->FillProfile(fxt3,qrs);
+      cpc->FillProfile( (int)fxt3,qrs);
       
       for( auto &c : cpc_vec )
 	{
 	  nFill = rand->Poisson(1);
 	  for (int iFill=0;iFill<nFill;iFill++)
 	    {
-	      c->FillProfile(fxt3,qrs);
+	      c->FillProfile( (int) fxt3,qrs);
 	    }
 	}
     }
 
-  /*      
-  //Check
-  for ( int i=0;i<300;i++)
-    {
-      if ( h_mult->GetBinContent(i) > 0 ) h_p->SetBinContent( i ,1.0*h_p->GetBinContent(i) / h_mult->GetBinContent(i) );
-    }
-
-  TFile * proton_hist_file = new TFile("proton_hists.root","recreate");
-  for ( int i=0;i<300;i++)
-    {
-      if (h_protons[i]->GetEntries() >0 ) h_protons[i]->Write();
-    }
-  
-  h_mult->Write();
-  h_p->Write();
-
-  proton_hist_file->Close();
-  */
-
   return 0;
 
 }
 
 
-int PileUpEventLoop(
-		    TChain * tc,
-		    long int nentries,
-		    InputParameterList & pl,
-		    TString outfilename
-		    )
-{
 
-  map<TString,TH2F*> th2f;
-
-  th2f["refmult_nmip"] = new TH2F("refmult_mnmip",";FxtMult;EPD #Sigma nMip",300,0,300,200,0,200);
-  th2f["gmult_nmip"] = new TH2F("gmult_mnmip",";FxtMult TofMatch;EPD #Sigma nMip",300,0,300,200,0,200);
-  th2f["refmult3_nmip"] = new TH2F("refmult3_mnmip",";FxtMult3;EPD #Sigma nMip",300,0,300,200,0,200);
-
-  th2f["refmult_nmip_cut"] = new TH2F("refmult_mnmip_cut",";FxtMult;EPD #Sigma nMip",300,0,300,200,0,200);
-  th2f["gmult_nmip_cut"] = new TH2F("gmult_mnmip_cut",";FxtMult TofMatch;EPD #Sigma nMip",300,0,300,200,0,200);
-  th2f["refmult3_nmip_cut"] = new TH2F("refmult3_mnmip_cut",";FxtMult3;EPD #Sigma nMip",300,0,300,200,0,200);
-
-  th2f["refmult_pipdu"] = new TH2F("refmult_pipdu",";FxtMult;TOF #pi + p + du",300,0,300,300,0,300);
-  th2f["refmult3_pipdu"] = new TH2F("refmult3_pipdu",";FxtMult3;TOF #pi + p + du",300,0,300,300,0,300);
-
-  th2f["refmult_pipdu_cut"] = new TH2F("refmult_pipdu_cut",";FxtMult;TOF #pi + p + du",300,0,300,300,0,300);
-  th2f["refmult3_pipdu_cut"] = new TH2F("refmult3_pipdu_cut",";FxtMult3;TOF #pi + p + du",300,0,300,300,0,300);
-
-  th2f["refmult_pipdu_ebad"] = new TH2F("refmult_pipdu_ebad",";FxtMult;TOF #pi + p + du",300,0,300,300,0,300);
-  th2f["refmult_pipdu_egood"] = new TH2F("refmult_pipdu_egood",";FxtMult;TOF #pi + p + du",300,0,300,300,0,300);
-
-  th2f["refmult_nmip_pbad"] = new TH2F("refmult_mnmip_pbad",";FxtMult;EPD #Sigma nMip",300,0,300,200,0,200);
-  th2f["refmult_nmip_pgood"] = new TH2F("refmult_mnmip_pgood",";FxtMult;EPD #Sigma nMip",300,0,300,200,0,200);
-
-  th2f["gmult_nmip_pbad"] = new TH2F("gmult_mnmip_pbad",";FxtMult TofMatch;EPD #Sigma nMip",300,0,300,200,0,200);  
-  th2f["gmult_nmip_pgood"] = new TH2F("gmult_mnmip_pgood",";FxtMult TofMatch;EPD #Sigma nMip",300,0,300,200,0,200);  
-
-  th2f["pileup_summary"] = new TH2F("pileup_summary","pileup_summary",10,-0.5,9.5,7,-0.5,6.5);
-
-  StFemtoEvent * event = new StFemtoEvent();
-  
-  tc->SetBranchAddress("StFemtoEvent",&event);
-  
-  //Proton Mass
-  double mass=0.938272;
-
-  long int onePercent = nentries/100;
-  int percent = 0;
-  
-  for (int iEntry=0;iEntry<nentries;iEntry++)
-    {
-
-      if ( iEntry % onePercent == 0 )
-	{
-	  //	  cout << percent  << "%" << " iEntry =" << iEntry << endl;
-	  percent++;
-	}
-      
-      tc->GetEntry(iEntry);
-      
-      //Get Event Variables
-      double vz   = event->GetVz();
-      double vr   = event->GetVxy();
-      double fxt3 = event->GetFxtMult3();
-      double fxt  = event->GetFxtMult();
-      double fxttof = event->GetFxtMultTofMatch();
-      
-      //Make Event Cuts
-      if ( vz > pl.VzMax() ) continue;
-      if ( vz < pl.VzMin() ) continue;
-      if ( vr > pl.VrMax() ) continue;
-
-      double nmip = event->GetNMip();
-      double pipdu = event->GetPiPDu();
-
-      pair<bool,bool> epd_tof = PileUpBadEvent(fxttof,(int)fxt,nmip,pipdu);
-      //      if ( !epd_tof.first || !epd_tof.second ) continue;
-
-      int cent = CentBin3(fxt3);
-
-      th2f["refmult_nmip"]->Fill( fxt, nmip);
-      th2f["gmult_nmip"]->Fill( fxttof, nmip);
-      th2f["refmult3_nmip"]->Fill( fxt3, nmip);
-      
-      th2f["refmult_pipdu"]->Fill( fxt, pipdu);
-      th2f["refmult3_pipdu"]->Fill( fxt3, pipdu);
-
-      if ( epd_tof.first )
-	{
-	  th2f["refmult_nmip_cut"]->Fill( fxt, nmip);
-	  th2f["gmult_nmip_cut"]->Fill( fxttof, nmip);
-	  th2f["refmult3_nmip_cut"]->Fill( fxt3, nmip);
-	}
-	 
-      if ( epd_tof.second )
-	{
-	  th2f["refmult_pipdu_cut"]->Fill( fxt, pipdu);
-	  th2f["refmult3_pipdu_cut"]->Fill( fxt3, pipdu);
-	}
-      
-      if ( !epd_tof.first ) th2f["refmult_pipdu_ebad"]->Fill( fxt, pipdu);
-      if ( epd_tof.first )  th2f["refmult_pipdu_egood"]->Fill( fxt, pipdu);
-      
-      if ( !epd_tof.second ) th2f["refmult_nmip_pbad"]->Fill( fxt, nmip);
-      if ( epd_tof.second )  th2f["refmult_nmip_pgood"]->Fill( fxt, nmip);
-      
-      if ( !epd_tof.second ) th2f["gmult_nmip_pbad"]->Fill( fxttof, nmip);
-      if ( epd_tof.second ) th2f["gmult_nmip_pgood"]->Fill( fxttof, nmip);
-
-      //      TString binLabels[] = {"AllEvents","EventsAfterCut","TotalCut","EPDCut","TOFCut","PiPDu==0", "OverlappingCut"};      
-
-      if ( cent < 0 || cent > 9 ) continue;
-      th2f["pileup_summary"]->Fill( cent, 0); // All Events
-      if ( epd_tof.second && epd_tof.first ) th2f["pileup_summary"]->Fill( cent, 1); // EPD && TOF Cut Events
-      if ( !epd_tof.second || !epd_tof.first ) th2f["pileup_summary"]->Fill( cent, 2); // EPD && TOF Cut Events
-      if ( !epd_tof.first ) th2f["pileup_summary"]->Fill( cent, 3); // EPD Cut Events
-      if ( !epd_tof.second ) th2f["pileup_summary"]->Fill( cent, 4); // TOF Cut Events
-      if ( pipdu == 0 ) th2f["pileup_summary"]->Fill( cent, 5); // TOF Events PiPDu==0
-      if ( !epd_tof.second && !epd_tof.first ) th2f["pileup_summary"]->Fill( cent, 6); // EPD && TOF Cut Events
-
-
-
-      
-    }
-      
-
-  
-  TFile * outFile = new TFile(outfilename,"RECREATE");
-  outFile->cd();
-  for (auto &h : th2f )
-    {
-      h.second->Write();
-    }
-  outFile->Close();
-
-  return 0;
-
-}
 
 

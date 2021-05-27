@@ -14,7 +14,7 @@ ROOT_LIBS = $(shell root-config --libs)
 
 # all source code to be compiled .cxx .h
 
-CLASSES = CumulantProfileContainer analysisUtil MomentFunctions InputParameterList EventLoop ProtonEfficiency StFemtoTrack StFemtoEvent QALoop MomentEventLoop SystematicEventLoop FlucContainer PileUpCorrection SystematicCalculation
+CLASSES = CumulantProfileContainer analysisUtil MomentFunctions CumulantFunctions InputParameterList EventLoop ProtonEfficiency StFemtoTrack StFemtoEvent QALoop MomentEventLoop FlucContainer PileUpCorrection SystematicCalculation TOFEfficiencyMaker ProcessEmbedding
 
 DIR_H = $(addprefix ${INC}/,${CLASSES})
 H_FILES = $(addsuffix .h,${DIR_H})

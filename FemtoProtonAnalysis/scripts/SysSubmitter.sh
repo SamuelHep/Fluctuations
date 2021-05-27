@@ -13,9 +13,10 @@ inputParameter2=$8
 inputParameter3=$9
 inputParameter4=${10}
 inputParameter5=${11}
+inputParameter6=${12}
 
 #Check to make sure there are the right number of arguments
-if [ "$#" -ne 11 ]; then
+if [ "$#" -ne 12 ]; then
     echo "ERROR: Incorrect number of arguments! This script needs four: outputDir logDir schedDir filelist inputParameter packageName"
     exit 1
 fi
@@ -54,4 +55,4 @@ fi
 workDir=`pwd`/..
 
 #echo $packageName
-star-submit-template -template ../condor_xml/SysJobSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,packageName=$packageName,workDir=$workDir,inputParameter0=$inputParameter0,inputParameter1=$inputParameter1,inputParameter2=$inputParameter2,inputParameter3=$inputParameter3,inputParameter4=$inputParameter4,inputParameter5=$inputParameter5
+star-submit-template -template ../condor_xml/SysJobSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,packageName=$packageName,workDir=$workDir,inputParameter0=$inputParameter0,inputParameter1=$inputParameter1,inputParameter2=$inputParameter2,inputParameter3=$inputParameter3,inputParameter4=$inputParameter4,inputParameter5=$inputParameter5,inputParameter6=$inputParameter6

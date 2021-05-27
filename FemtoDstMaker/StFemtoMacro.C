@@ -40,6 +40,7 @@ void StFemtoMacro(Int_t nEvents=1,char *fileList,char *outDir="./",char *index="
   
   StFemtoDstMaker * femtoMaker = new StFemtoDstMaker("StFemtoDstMaker");
 
+  femtoMaker->LoadTPCEff( "checkEmbedding_pip.root" );
   femtoMaker->SetRunFile(runfile);
   femtoMaker->SetFileIndex(index);
   femtoMaker->SetOutDir(outDir);

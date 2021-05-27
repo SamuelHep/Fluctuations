@@ -20,6 +20,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TH3D.h"
 
 #include "InputParameterList.h"
 #include "analysisUtil.h"
@@ -69,7 +70,7 @@ int SimplePlots(
     {
       
       tc->GetEntry(iEntry);
-      
+
       //Get Event Variables
       double vz   = event->GetVz();
       double vr   = event->GetVxy();
@@ -92,7 +93,7 @@ int SimplePlots(
       //      th2f["fxttof_fxt3"]->Fill(fxttof,fxt3);
 
       pair<bool,bool> epd_tof = PileUpBadEvent(fxttof,(int)fxt,nmip,pipdu);
-      if ( !epd_tof.first || !epd_tof.second ) continue;
+      //      if ( !epd_tof.first || !epd_tof.second ) continue;
       
       for (int iTrack=0;iTrack<event->GetEntries();iTrack++)
 	{
@@ -143,6 +144,228 @@ int SimplePlots(
 
   for ( auto &h : th2f ) { h.second->Write(); } 
   for ( auto &h : th3f ) { h.second->Write(); } 
+
+
+}
+
+int QAplots(
+	    TChain * tc,
+	    long int nentries,
+	    InputParameterList & pl,
+	    TString outfilename
+	    )
+{
+
+  //  map<TString,TH2F*> th2f;
+  TFile * outfile = new TFile(outfilename,"recreate");
+  //  std::map<TString,TH3F*> th3f;
+
+  /*
+  th3f["fxt3_dca_nsigmaproton"] = new TH3F("fxt3_dca_nsigmaproton",";FxtMult3;DCA (cm);n#SigmaProton",400,-0.5,399.5,1000,0,10,10000,-10,10);
+  th3f["fxt3_dca_pt"] = new TH3F("fxt3_dca_pt",";FxtMult3;DCA (cm);p_{T}",400,-0.5,399.5,1000,0,10,10000,0,5);
+  th3f["fxt3_dca_eta"] = new TH3F("fxt3_dca_eta",";FxtMult3;DCA (cm);#eta",400,-0.5,399.5,1000,0,10,10000,-4,0);
+  th3f["fxt3_dca_nhitsfit"] = new TH3F("fxt3_dca_nhitsfit",";FxtMult3;DCA (cm);nHitsFit",400,-0.5,399.5,1000,0,10,100,-0.5,99.5);
+  th3f["fxt3_dca_tofmass2"] = new TH3F("fxt3_dca_tofmass2",";FxtMult3;DCA (cm);tofmass2",400,-0.5,399.5,1000,0,10,10000,0,5);
+  th3f["fxt3_dca_tofmass2_pcut"] = new TH3F("fxt3_dca_tofmass2_pcut",";FxtMult3;DCA (cm);tofmass2",400,-0.5,399.5,1000,0,10,10000,0,5);
+  th3f["fxt3_avgdca_fxt"] = new TH3F("fxt3_avgdca_fxt",";FxtMult3;DCA (cm);FxtMult",400,-0.5,399.5,1000,0,10,400,-0.5,399.5);
+
+  th3f["fxt3_dca_nsigmaproton_aw"] = new TH3F("fxt3_dca_nsigmaproton_aw",";FxtMult3;DCA (cm);n#SigmaProton",400,-0.5,399.5,1000,0,10,10000,-10,10);
+  th3f["fxt3_dca_pt_aw"] = new TH3F("fxt3_dca_pt_aw",";FxtMult3;DCA (cm);p_{T}",400,-0.5,399.5,1000,0,10,10000,0,5);
+  th3f["fxt3_dca_eta_aw"] = new TH3F("fxt3_dca_eta_aw",";FxtMult3;DCA (cm);#eta",400,-0.5,399.5,1000,0,10,10000,-4,0);
+  th3f["fxt3_dca_nhitsfit_aw"] = new TH3F("fxt3_dca_nhitsfit_aw",";FxtMult3;DCA (cm);nHitsFit",400,-0.5,399.5,1000,0,10,100,-0.5,99.5);
+  th3f["fxt3_dca_tofmass2_aw"] = new TH3F("fxt3_dca_tofmass2_aw",";FxtMult3;DCA (cm);tofmass2",400,-0.5,399.5,1000,0,10,10000,0,5);
+  th3f["fxt3_dca_tofmass2_pcut_aw"] = new TH3F("fxt3_dca_tofmass2_pcut_aw",";FxtMult3;DCA (cm);tofmass2",400,-0.5,399.5,1000,0,10,10000,0,5);
+  */
+
+  
+  TH1D * fxtmult3_dca3 = new TH1D("fxtmult3_dca3","",400,-0.5,399.5);
+  TH1D * fxtmult3_dca2p5 = new TH1D("fxtmult3_dca2p5","",400,-0.5,399.5);
+  TH1D * fxtmult3_dca2 = new TH1D("fxtmult3_dca2","",400,-0.5,399.5);
+  TH1D * fxtmult3_dca1 = new TH1D("fxtmult3_dca1","",400,-0.5,399.5);
+
+  TH1D * fxtmult_dca3 = new TH1D("fxtmult_dca3","",400,-0.5,399.5);
+  TH1D * fxtmult_dca2p5 = new TH1D("fxtmult_dca2p5","",400,-0.5,399.5);
+  TH1D * fxtmult_dca2 = new TH1D("fxtmult_dca2","",400,-0.5,399.5);
+  TH1D * fxtmult_dca1 = new TH1D("fxtmult_dca1","",400,-0.5,399.5);
+
+  TH3D * th3f_cent_dca_nsigmaproton = new TH3D("cent_dca_nsigmaproton",";FxtMult3;DCA (cm);n#SigmaProton",9,-0.5,8.5,300,0,3,1000,-10,10);
+  TH3D * th3f_cent_dca_pt = new TH3D("cent_dca_pt",";FxtMult3;DCA (cm);p_{T}",9,-0.5,8.5,300,0,3,1000,0,5);
+  TH3D * th3f_cent_dca_eta = new TH3D("cent_dca_eta",";FxtMult3;DCA (cm);#eta",9,-0.5,8.5,300,0,3,1000,-4,0);
+  TH3D * th3f_cent_dca_nhitsfit = new TH3D("cent_dca_nhitsfit",";FxtMult3;DCA (cm);nHitsFit",9,-0.5,8.5,300,0,3,100,-0.5,99.5);
+  TH3D * th3f_cent_dca_tofmass2 = new TH3D("cent_dca_tofmass2",";FxtMult3;DCA (cm);tofmass2",9,-0.5,8.5,300,0,3,1000,0,5);
+  TH3D * th3f_cent_dca_tofmass2_pcut = new TH3D("cent_dca_tofmass2_pcut",";FxtMult3;DCA (cm);tofmass2",9,-0.5,8.5,300,0,3,1000,0,5);
+  TH3D * th3f_fxt3_avgdca_fxt = new TH3D("fxt3_avgdca_fxt",";FxtMult3;DCA (cm);FxtMult",400,-0.5,399.5,300,0,3,400,-0.5,399.5);
+
+  TH3D * th3f_cent_dca_nsigmaproton_aw = new TH3D("cent_dca_nsigmaproton_aw",";FxtMult3;DCA (cm);n#SigmaProton",9,-0.5,8.5,300,0,3,1000,-10,10);
+  TH3D * th3f_cent_dca_pt_aw = new TH3D("cent_dca_pt_aw",";FxtMult3;DCA (cm);p_{T}",9,-0.5,8.5,300,0,3,1000,0,5);
+  TH3D * th3f_cent_dca_eta_aw = new TH3D("cent_dca_eta_aw",";FxtMult3;DCA (cm);#eta",9,-0.5,8.5,300,0,3,1000,-4,0);
+  TH3D * th3f_cent_dca_nhitsfit_aw = new TH3D("cent_dca_nhitsfit_aw",";FxtMult3;DCA (cm);nHitsFit",9,-0.5,8.5,300,0,3,100,-0.5,99.5);
+  TH3D * th3f_cent_dca_tofmass2_aw = new TH3D("cent_dca_tofmass2_aw",";FxtMult3;DCA (cm);tofmass2",9,-0.5,8.5,300,0,3,1000,0,5);
+  TH3D * th3f_cent_dca_tofmass2_pcut_aw = new TH3D("cent_dca_tofmass2_pcut_aw",";FxtMult3;DCA (cm);tofmass2",9,-0.5,8.5,300,0,3,1000,0,5);
+  
+  StFemtoEvent * event = new StFemtoEvent();  
+  tc->SetBranchAddress("StFemtoEvent",&event);
+  
+  //Proton Mass
+  double mass=0.938272;
+
+  for (int iEntry=0;iEntry<nentries;iEntry++)
+    {
+      
+      tc->GetEntry(iEntry);
+      //Get Event Variables
+      double vz   = event->GetVz();
+      double vr   = event->GetVxy();
+      double fxt3 = event->GetFxtMult3();
+      double fxt  = event->GetFxtMult();
+      double nmip = event->GetNMip();
+      double pipdu = event->GetPiPDu();
+      double fxttof = event->GetFxtMultTofMatch();      
+
+
+      if ( vz > pl.VzMax() ) continue;
+      if ( vz < pl.VzMin() ) continue;
+      if ( vr > pl.VrMax() ) continue;
+
+      double fxt_dca3=0;
+      double fxt_dca2p5=0;
+      double fxt_dca2=0;
+      double fxt_dca1=0;
+
+      double fxt3_dca3=0;
+      double fxt3_dca2p5=0;
+      double fxt3_dca2=0;
+      double fxt3_dca1=0;
+
+      int centBin = CentBin3(fxt3);
+      if ( centBin == -1 ) centBin=8;
+      std::vector<double> avg_dca;
+
+      for (int iTrack=0;iTrack<event->GetEntries();iTrack++)
+	{
+	  StFemtoTrack trk = event->GetFemtoTrack(iTrack);
+	  
+
+	  //Get Track Variables
+	  short nhitsfit = trk.GetNHitsFit();
+	  double dcaZ  = trk.GetDcaZ();
+	  double dcaX  = trk.GetDcaX();
+	  double dcaY  = trk.GetDcaY();
+	  double dca = sqrt(pow(dcaX,2) + pow(dcaY,2) + pow(dcaZ,2));
+
+	  if ( dca < 3 ) fxt_dca3+=1;
+	  if ( dca < 2.5 ) fxt_dca2p5+=1;
+	  if ( dca < 2 ) fxt_dca2+=1;
+	  if ( dca < 1 ) fxt_dca1+=1;
+
+	  double pt = trk.GetPt();
+	  double pz = trk.GetPz();
+	  Double_t p      = sqrt( pow(pt,2) + pow(pz,2) );
+	  double nsigpro = trk.GetNSigmaProton() - getProtonDedxMeanShift(p);
+
+	  if ( nsigpro < -3 )
+	    {
+	      if ( dca < 3 ) fxt3_dca3+=1;
+	      if ( dca < 2.5 ) fxt3_dca2p5+=1;
+	      if ( dca < 2 ) fxt3_dca2+=1;
+	      if ( dca < 1 ) fxt3_dca1+=1;
+	    }
+		
+	  double tofmass = trk.GetTofMass();
+	  double tofmass2 = (tofmass < 0 ) ?  -1 : tofmass*tofmass;
+
+	  //calculate the energy and rapidity
+	  Double_t energy = sqrt( pow(pt,2) + pow(pz,2) + pow(mass,2) );
+
+	  Double_t rap = 0.5 * log( ( energy + pz) / (energy - pz) );
+	  Double_t eta = 0.5 * log( ( p      + pz) / (p      - pz) );
+	  rap = fabs(rap) - 1.049;
+	  
+	  bool tofmatch=false;
+	  bool tofmatchproton=false;
+	  bool goodProton=false;
+	  if ( tofmass > 0 ) tofmatch=true;
+	  if ( tofmass2 > 0.6 && tofmass2 < 1.2) tofmatchproton=true;
+
+
+	  if (tofmatchproton || p<2.0) 
+	    {
+	      if ( fabs(nsigpro) < 3 )
+		{
+		  if ( rap > -0.5 && rap < 0 )
+		    {
+		      if (pt > 0.4 && pt < 2.0 )
+			{
+			  goodProton=true;
+			}
+		    }	  
+		}
+	    }
+
+	  th3f_cent_dca_nsigmaproton->Fill( centBin, dca, nsigpro);
+	  th3f_cent_dca_pt->Fill(centBin, dca, pt);
+	  th3f_cent_dca_eta->Fill( centBin, dca, eta);
+	  th3f_cent_dca_nhitsfit->Fill( centBin, dca, nhitsfit);
+	  th3f_cent_dca_tofmass2->Fill( centBin, dca, tofmass2);
+	  if ( p > 2.0 ) th3f_cent_dca_tofmass2_pcut->Fill( centBin, dca, tofmass2);
+
+	  if ( goodProton )
+	    {
+	      th3f_cent_dca_nsigmaproton_aw->Fill( centBin, dca, nsigpro);
+	      th3f_cent_dca_pt_aw->Fill( centBin, dca, pt);
+	      th3f_cent_dca_eta_aw->Fill( centBin, dca, eta);
+	      th3f_cent_dca_nhitsfit_aw->Fill( centBin, dca, nhitsfit);
+	      th3f_cent_dca_tofmass2_aw->Fill( centBin, dca, tofmass2);
+	      if ( p > 2.0 ) th3f_cent_dca_tofmass2_pcut_aw->Fill( centBin, dca, tofmass2);
+	    }
+	  avg_dca.push_back(dca);
+	
+	}
+
+      double avgDca = accumulate(avg_dca.begin(),avg_dca.end(),0.0);
+      th3f_fxt3_avgdca_fxt->Fill( fxt3,avgDca,fxt_dca3);
+
+      fxtmult_dca3->Fill(fxt_dca3);
+      fxtmult_dca2p5->Fill(fxt_dca2p5);
+      fxtmult_dca2->Fill(fxt_dca2);
+      fxtmult_dca1->Fill(fxt_dca1);
+
+      fxtmult3_dca3->Fill(fxt3_dca3);
+      fxtmult3_dca2p5->Fill(fxt3_dca2p5);
+      fxtmult3_dca2->Fill(fxt3_dca2);
+      fxtmult3_dca1->Fill(fxt3_dca1);
+  
+    }
+
+  outfile->cd();
+
+  fxtmult_dca3->Write();
+  fxtmult_dca2p5->Write();
+  fxtmult_dca2->Write();
+  fxtmult_dca1->Write();
+
+  fxtmult3_dca3->Write();
+  fxtmult3_dca2p5->Write();
+  fxtmult3_dca2->Write();
+  fxtmult3_dca1->Write();
+
+  th3f_cent_dca_nsigmaproton->Write();
+  th3f_cent_dca_pt->Write();
+  th3f_cent_dca_eta->Write();
+  th3f_cent_dca_nhitsfit->Write();
+  th3f_cent_dca_tofmass2->Write();
+  th3f_cent_dca_tofmass2_pcut->Write();
+  th3f_fxt3_avgdca_fxt->Write();
+
+  th3f_cent_dca_nsigmaproton_aw->Write();
+  th3f_cent_dca_pt_aw->Write();
+  th3f_cent_dca_eta_aw->Write();
+  th3f_cent_dca_nhitsfit_aw->Write();
+  th3f_cent_dca_tofmass2_aw->Write();
+  th3f_cent_dca_tofmass2_pcut_aw->Write();
+
+  //  for ( auto &h : th2f ) { h.second->Write(); } 
+  //  for ( auto &h : th3f ) { h.second->Write(); } 
 
 
 }
@@ -302,8 +525,6 @@ int QALoop(
   prof2d["dcaxypro_npro_all_prof"] = new TProfile2D("dcaxypro_npro_all_prof",";Run Index;nProtons",500,-0.5,499.5,200,0,200);
   prof2d["dcaxypro_npro_epdcut_prof"] = new TProfile2D("dcaxypro_npro_epdcut_prof",";Run Index;nProtons",500,-0.5,499.5,200,0,200);
   prof2d["dcaxypro_npro_tofcut_prof"] = new TProfile2D("dcaxypro_npro_tofcut_prof",";Run Index;nProtons",500,-0.5,499.5,200,0,200);
-
-
   
   StFemtoEvent * event = new StFemtoEvent();  
   tc->SetBranchAddress("StFemtoEvent",&event);

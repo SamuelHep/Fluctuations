@@ -14,8 +14,8 @@
     <File>file:&workDir;/lib/momentCode.so</File>
     <File>file:&inputParameter;</File>
     <File>file:&workDir;/macros/RunEvents.C</File>
-    <File>file:&workDir;/rootfiles/eff/fitEmbedding.root</File>
-    <File>file:&workDir;/rootfiles/eff/tof_eff.root</File>
+    <File>file:&workDir;/rootfiles/eff/tpc_efficiency.root</File>
+    <File>file:&workDir;/rootfiles/eff/tof_efficiency_fineBinning.root</File> 
    </Package>
   </SandBox> 
 

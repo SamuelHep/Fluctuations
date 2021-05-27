@@ -13,8 +13,9 @@
 
   <SandBox installer="ZIP">
       <Package name="sched_fDsts"> 
-      <File>file:/star/u/sheppel/femtoDev/StFemtoMacro.C</File>
-      <File>file:/star/u/sheppel/femtoDev/StRoot/</File>
+      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StFemtoMacro.C</File>
+      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StRoot/</File>
+      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/checkEmbedding_pip.root</File>
       <File>file:&goodRunList;</File>
     </Package>
   </SandBox>
@@ -25,7 +26,7 @@
     cons
 
     set runfile = `basename &goodRunList;`
- 
+
     <!-- Run the Root Macro with the options above -->
     set nEvents = 99999999    <!-- Number of events to run over. -->
 

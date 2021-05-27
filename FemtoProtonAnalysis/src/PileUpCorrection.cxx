@@ -48,14 +48,16 @@ CumulantProfileContainer * PileUpCorrection::LoadCumulant(TString filename,int i
   
   //Setting C[][]
   CumulantProfileContainer * cpc = new CumulantProfileContainer(f,iContainer);  
-  cpc->FactorialCumulantsToNormalCumulants();
+  cpc->MomentsToCumulants();
   std::vector<TGraphErrors*> cumulantGraphs;
-  cumulantGraphs.resize(5,NULL);
+  cumulantGraphs.resize(7,NULL);
   TGraphErrors * wgr = cpc->GetWeightGraph();
-  cumulantGraphs[1] = cpc->GetQ1Graph();
-  cumulantGraphs[2] = cpc->GetQ2Graph();
-  cumulantGraphs[3] = cpc->GetQ3Graph();
-  cumulantGraphs[4] = cpc->GetQ4Graph();
+  cumulantGraphs[1] = cpc->GetGraph("C1");
+  cumulantGraphs[2] = cpc->GetGraph("C2");
+  cumulantGraphs[3] = cpc->GetGraph("C3");
+  cumulantGraphs[4] = cpc->GetGraph("C4");
+  cumulantGraphs[5] = cpc->GetGraph("C5");
+  cumulantGraphs[6] = cpc->GetGraph("C6");
 
   TH1F * mult = new TH1F("mult","mult",300,0,300);
   for (int i=0;i<wgr->GetN();i++)
@@ -72,19 +74,21 @@ CumulantProfileContainer * PileUpCorrection::LoadCumulant(TString filename,int i
 
       FlucContainer fluc;
 
-      for (int iC=1;iC<5;iC++)
+      for (int iC=1;iC<7;iC++)
 	{
 	  C[iMult][iC] = cumulantGraphs[iC]->GetY()[iMult];
 	  //	  C[iMult][iC] = 1.0;
 	  fluc.SetCumulants(iC,C[iMult][iC]);
 	}
 
-      for (int iMu=1;iMu<5;iMu++)
+      for (int iMu=1;iMu<7;iMu++)
 	{
 	  mu[iMult][iMu] = fluc.GetMomentsFromCumulants( iMu );
 	}
 
     }
+
+  f->Close();
   return cpc;
 }
 
@@ -145,7 +149,7 @@ CumulantProfileContainer * PileUpCorrection::GetURQMDTrueCumulant(TString filena
   TFile * f = new TFile(filename,"read");
   
   TH1F * inputMult0 = (TH1F*)f->Get("hMult_True");
-  inputMult->SetName("inputMult0");
+  inputMult0->SetName("inputMult0");
 
   for ( int iMult=0;iMult<300;iMult++)
     {      
@@ -199,13 +203,15 @@ bool PileUpCorrection::LoadPileUpHistograms(TString filename)
   hMult = (TH1F*)f->Get("FxtMult3");     // All
   hRM = (TH2F*)f->Get("FxtMult3_RM"); //// response matrix 
   */
-  hMult_true = (TH1F*)f->Get("hMC_true"); // True
+  hMult_true = (TH1F*)f->Get("hMC_true_itr_99"); // True
   hMult = (TH1F*)f->Get("hMC_all_final");     // All
   hRM = (TH2F*)f->Get("hRM_final"); //// response matrix 
 
   if ( hMult_true && hMult && hRM ) return true;
   else return false;
 }
+
+
 
 bool PileUpCorrection::LoadURQMDHistograms(TString filename)
 {
@@ -223,25 +229,28 @@ bool PileUpCorrection::LoadURQMDHistograms(TString filename)
 
 void PileUpCorrection::CorrectionZero( LongDouble_t *mucor,LongDouble_t *musub, const LongDouble_t alpha, const LongDouble_t beta )
 {
-  for(int n=1; n<=4; n++){
+  for(int n=1; n<=6; n++){
     mucor[n] = 0;
   }
   mucor[1] = musub[1]/(1-alpha+2*beta);
   mucor[2] = (musub[2]-2*beta*mucor[1]*mucor[1])/(1-alpha+2*beta);
   mucor[3] = (musub[3]-6*beta*mucor[2]*mucor[1])/(1-alpha+2*beta);
   mucor[4] = (musub[4]-2*beta*(4*mucor[1]*mucor[3]+3*mucor[2]*mucor[2]))/(1-alpha+2*beta);
-  
+  mucor[5] = (musub[5]-10*beta*(mucor[4]*mucor[1]+2*mucor[3]*mucor[2]))/(1-alpha+2*beta);
+  mucor[6] = (musub[6]-2*beta*(6*mucor[5]*mucor[1]+15*mucor[4]*mucor[2]+10*mucor[3]*mucor[3]))/(1-alpha+2*beta);
 }
 
 void PileUpCorrection::Correction( LongDouble_t *mucor,LongDouble_t *musub, LongDouble_t  *muzero, const LongDouble_t alpha, const LongDouble_t beta )
 {
-  for(int n=1; n<=4; n++){
+  for(int n=1; n<=6; n++){
     mucor[n] = 0;
   }
   mucor[1] = (musub[1]-beta*muzero[1])/(1-alpha+beta);
   mucor[2] = (musub[2]-beta*(muzero[2]+2*mucor[1]*muzero[1]))/(1-alpha+beta);
   mucor[3] = (musub[3]-beta*(muzero[3]+3*mucor[2]*muzero[1]+3*mucor[1]*muzero[2]))/(1-alpha+beta);
   mucor[4] = (musub[4]-beta*(muzero[4]+4*mucor[3]*muzero[1]+4*mucor[1]*muzero[3]+6*mucor[2]*muzero[2]))/(1-alpha+beta);
+  mucor[5] = (musub[5]-beta*(muzero[5]+5*mucor[4]*muzero[1]+10*mucor[3]*muzero[2]+10*mucor[2]*muzero[3]+5*mucor[1]*muzero[4]))/(1-alpha+beta);
+  mucor[6] = (musub[6]-beta*(muzero[6]+6*mucor[5]*muzero[1]+15*mucor[4]*muzero[2]+20*mucor[3]*muzero[3]+15*mucor[2]*muzero[4]+6*mucor[1]*muzero[5]))/(1-alpha+beta);
 }
 
 CumulantProfileContainer * PileUpCorrection::CorrectionForMultRange(int iName,int trgMult, int maxMult)

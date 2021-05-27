@@ -18,6 +18,8 @@
 #include "TVector3.h"
 
 class StFemtoTrack;
+class TH1D;
+class TF1;
 
 //_________________
 class StFemtoDstMaker : public StMaker {
@@ -44,6 +46,11 @@ class StFemtoDstMaker : public StMaker {
 
   Float_t GetT0(StPicoTrack const* const trk, TVector3 const& vtxTV3,float mass) const;
 
+  int LoadTPCEff(TString filename);
+  int GetPionEffBin( double y );
+  double GetPionEfficiency(double y, double pt);
+  Double_t ParticleRapidity( Double_t pt, Double_t pz, Double_t mass );
+
  private:
   
   StPicoDstMaker * mPicoDstMaker;
@@ -59,6 +66,10 @@ class StFemtoDstMaker : public StMaker {
   TFile * mOutfile;
 
   int fullEventCounter;
+
+  std::vector<TH1D*> _h1d_eff;
+  std::vector<TF1*> _tf1_eff;
+
 
   ClassDef(StFemtoDstMaker,1)
 

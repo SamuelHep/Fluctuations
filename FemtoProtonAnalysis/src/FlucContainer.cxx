@@ -11,7 +11,7 @@ using std::vector;
 //__________________________________________________________________________________
 FlucContainer::FlucContainer(){
   
-  maxOrder = 4;
+  maxOrder = 6;
   ncm.resize(2*maxOrder+1);
   C.resize(2*maxOrder+1);
   

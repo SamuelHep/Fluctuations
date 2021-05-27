@@ -8,8 +8,8 @@ void RunAllPileUpCorrections()
 
   gSystem->Load("../lib/momentCode.so");
 
-  TString profileDir = "/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/profiles/";
-  TString outDir = "/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/cumulants/";
+  TString profileDir = "/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/out_sys_5_18/profiles/";
+  TString outDir = "/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/out_sys_5_18/cumulants/";
   TString pileupDir = "/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/pileupCor/";
 
   TString histfilename[3] = {"test_data_best.root","test_data_best_minus.root","test_data_best_plus.root"};
@@ -19,17 +19,21 @@ void RunAllPileUpCorrections()
       histfilename[i] = pileupDir + histfilename[i];
     }
 
-  TString prefix="profiles";
+  TString prefix="profiles_";
   TString out_prefix="out";
-  TString label1[4] = {"n0p2_0","n0p3_n0p1","n0p4_n0p2","n0p5_n0p3"};
-  TString label2[6] = {"norm","SYS1","SYS2","SYS3","SYS4","SYS5"};
-  TString pileup_labels[2] = {"SYS6","SYS7"};
+  //  TString label1[4] = {"n0p2_0","n0p3_0","n0p4_0","n0p5_0"};
+  //  TString label1[4] = {"n0p5_0_pt1","n0p5_0_pt2","n0p5_0_pt3","n0p5_0"};
+  //  TString label1[4] = {"n0p1_0p1","n0p5_0_pt2","n0p5_0_pt3","n0p5_0"};
+  TString label1[2] = {"n0p1_0","0_0p1"};
+  TString label2[10] = {"norm","SYS1","SYS2","SYS3","SYS4","SYS5","SYS6","SYS7","SYS8","SYS9"};
+  TString pileup_labels[2] = {"SYS7","SYS8"};
+  TString cbwc_labels[2] = {"SYS9","SYS10"};
 
-  for (int i=0;i<4;i++)
+  for (int i=0;i<2;i++)
     {
-      for (int j=0;j<6;j++)
+      for (int j=0;j<7;j++)
 	{
-	  TString infilename  = TString::Format("%s%s_%s_%s.root",profileDir.Data(),prefix.Data(),label1[i].Data(),label2[j].Data());
+	  TString infilename  = TString::Format("%s%s%s_%s.root",profileDir.Data(),prefix.Data(),label1[i].Data(),label2[j].Data());
 	  TString outfilename = TString::Format("%s%s_%s_%s.root",outDir.Data(),out_prefix.Data(),label1[i].Data(),label2[j].Data());
 
 	  cout << "INFILE =" << infilename << endl;
@@ -43,6 +47,11 @@ void RunAllPileUpCorrections()
 	      RunPileUpCorr( infilename, outfilename, histfilename[1], 0);
 	      outfilename = TString::Format("%s%s_%s_%s.root",outDir.Data(),out_prefix.Data(),label1[i].Data(),pileup_labels[1].Data());
 	      RunPileUpCorr( infilename, outfilename, histfilename[2], 0);
+
+	      outfilename = TString::Format("%s%s_%s_%s.root",outDir.Data(),out_prefix.Data(),label1[i].Data(),cbwc_labels[0].Data());
+	      RunPileUpCorr( infilename, outfilename, histfilename[0],0, -1);
+	      outfilename = TString::Format("%s%s_%s_%s.root",outDir.Data(),out_prefix.Data(),label1[i].Data(),cbwc_labels[1].Data());
+	      RunPileUpCorr( infilename, outfilename, histfilename[0],0, 1);
 	    }
 
 	}

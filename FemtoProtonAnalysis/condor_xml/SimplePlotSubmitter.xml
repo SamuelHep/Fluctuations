@@ -7,13 +7,14 @@
   <Generator><Location>/star/data01/pwg/sheppel/femtoAnalysis/sched/
   </Location></Generator>
     
-  <input URL="filelist:/direct/star+u/sheppel/femtoAnalysis/femtoDst_v1.3.list"  /> 
+  <!--  <input URL="filelist:/direct/star+u/sheppel/femtoAnalysis/femtoDst_v1.3.list"  /> -->
+  <input URL="filelist:/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/femto_nCharge.list"  /> 
     
   <SandBox installer="ZIP">
    <Package name="sched_simplePlots">
-    <File>file:/direct/star+u/sheppel/femtoAnalysis/femtoLibrary/momentCode.so</File>
-    <File>file:/direct/star+u/sheppel/femtoAnalysis/parameter.list</File>
-    <File>file:/direct/star+u/sheppel/femtoAnalysis/RunSimplePlots.C</File>
+    <File>file:/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/lib/momentCode.so</File>
+    <File>file:/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p5_0_norm.list</File>
+    <File>file:/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/macros/RunSimplePlots.C</File>
    </Package>
   </SandBox> 
 
@@ -22,9 +23,11 @@
     stardev
     setup 64bits
 
-    root -b -l -q RunSimplePlots.C\(\"$FILELIST\",\"parameter.list\",\"$INPUTFILE0\"\)
+    set parameterList = `basename /star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p5_0_norm.list`
+
+    root -b -l -q RunSimplePlots.C\(\"$FILELIST\",\"$parameterList\",\"$INPUTFILE0\"\)
 
     </command>
     
-    <output fromScratch="*.root" toURL="file:/star/data01/pwg/sheppel/femtoAnalysis/simplePlots_withPro/"/>
+    <output fromScratch="*.root" toURL="file:/star/data01/pwg/sheppel/femtoAnalysis/out_simplePlots/"/>
  </job> 

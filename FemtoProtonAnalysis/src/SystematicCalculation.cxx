@@ -14,18 +14,14 @@ ClassImp( SystematicCalculation );
 SystematicCalculation::SystematicCalculation()
 {
 
-  std::vector<TString> grnames = {"Q1gr_Corr_binnned","Q2gr_Corr_binnned","Q3gr_Corr_binnned","Q4gr_Corr_binnned",
-				  "ratio_Q2gr_Corr_binnned_Q1gr_Corr_binnned","ratio_Q3gr_Corr_binnned_Q2gr_Corr_binnned",
-				  "ratio_Q4gr_Corr_binnned_Q2gr_Corr_binnned",
-				  "K1gr_Corr_binnned","K2gr_Corr_binnned","K3gr_Corr_binnned","K4gr_Corr_binnned",
-				  "ratio_K2gr_Corr_binnned_K1gr_Corr_binnned","ratio_K3gr_Corr_binnned_K1gr_Corr_binnned",
-				  "ratio_K4gr_Corr_binnned_K1gr_Corr_binnned"};
+  std::vector<TString> grnames = {"C1_cbwc","C2_cbwc","C3_cbwc","C4_cbwc","C5_cbwc","C6_cbwc","C2_C1_cbwc","C3_C2_cbwc","C4_C2_cbwc","C5_C1_cbwc","C6_C2_cbwc",
+				  "K1_cbwc","K2_cbwc","K3_cbwc","K4_cbwc","K5_cbwc","K6_cbwc","K2_K1_cbwc","K3_K1_cbwc","K4_K1_cbwc","K5_K1_cbwc","K6_K1_cbwc"};
 
 
-  std::vector<TString> simple_names_norm = {"C1","C2","C3","C4","C2_C1","C3_C2","C4_C2",
-					    "K1","K2","K3","K4","K2_K1","K3_K1","K4_K1"};
-  std::vector<TString> simple_names_sys  = {"C1_sys","C2_sys","C3_sys","C4_sys","C2_C1_sys","C3_C2_sys","C4_C2_sys",
-					    "K1_sys","K2_sys","K3_sys","K4_sys","K2_K1_sys","K3_K1_sys","K4_K1_sys"};
+  std::vector<TString> simple_names_norm = {"c1","c2","c3","c4","c5","c6","cr21","cr32","cr42","cr51","cr62",
+					    "k1","k2","k3","k4","k5","k6","kr21","kr31","kr41","kr51","kr61"};
+  std::vector<TString> simple_names_sys  = {"c1_sys","c2_sys","c3_sys","c4_sys","c5_sys","c6_sys","cr21_sys","cr32_sys","cr42_sys","cr51_sys","cr62_sys",
+					    "k1_sys","k2_sys","k3_sys","k4_sys","k5_sys","k6_sys","kr21_sys","kr31_sys","kr41_sys","kr51_sys","kr61_sys"};
  
   _simple_names_norm = simple_names_norm;
   _simple_names_sys  = simple_names_sys;
@@ -200,7 +196,7 @@ bool SystematicCalculation::Calculate()
       TGraphErrors * nom_gr = _nominal_gr_vec[iGr];
       TGraphErrors * sys_gr = _sys_gr_vec[iGr];
       
-      //Loop through points
+     //Loop through points
       for ( int iPt=0; iPt<nom_gr->GetN(); iPt++ )
 	{
 	  double nom_x = nom_gr->GetX()[iPt];
@@ -211,19 +207,19 @@ bool SystematicCalculation::Calculate()
 	  for ( int iSys=0;iSys<_nsys_single_gr.size();iSys++ )
 	    {
 	      double sys_y = _nsys_single_gr[iSys][iGr]->GetY()[iPt];
-	      cout << "single sys_y=" << sys_y << endl;
+	      cout << "single sys_y=" << sys_y << " mag=" << sqrt( pow( nom_y - sys_y, 2 )) << endl;
 	      sys_err2+= pow( nom_y - sys_y, 2 );
 	    }
 
 	  for ( int iSys=0;iSys<_nsys_double_gr.size();iSys++ )
 	    {
 	      double sys_y_double = _nsys_double_gr[iSys][iGr]->GetY()[iPt];
-	      cout << "double sys_y=" << sys_y_double << endl;
+	      cout << "double sys_y=" << " mag=" << sqrt(pow( nom_y - sys_y_double, 2 )) << endl;
 	      sys_err2+= 0.5*(pow( nom_y - sys_y_double, 2 ));
 	    }
 
 	  double sys_err = sqrt( sys_err2 );
-	  cout << "sys error=" << sys_err << endl;
+	  cout << "nom x=" << nom_x << " nom_y=" << nom_y <<" sys error=" << sys_err << endl;
 
 	  sys_gr->SetPointError(iPt,0,sys_err);
 	}

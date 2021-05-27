@@ -22,5 +22,12 @@ int QALoop(
 	   TFile * outfile
 	   );
 
+int QAplots(
+	    TChain * tc,
+	    long int nentries,
+	    InputParameterList & pl,
+	    TString outfilename
+	    );
+
 
 #endif

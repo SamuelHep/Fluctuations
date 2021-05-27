@@ -6,9 +6,9 @@
 
 using namespace std;
 
-double q_r_s(vector<pair<int,double>> &track_eff_pair, int r, int s)
+long double q_r_s(vector<pair<int,double>> &track_eff_pair, int r, int s)
 {
-  double q = 0;
+  long double q = 0;
   
   for ( auto &p : track_eff_pair )
     {
@@ -19,10 +19,10 @@ double q_r_s(vector<pair<int,double>> &track_eff_pair, int r, int s)
   return q;
 }
 
-vector<vector<double>> make_all_q_s( vector<pair<int,double>> & track_eff_pair_vec, int rMax, int sMax )
+vector<vector<long double>> make_all_q_s( vector<pair<int,double>> & track_eff_pair_vec, int rMax, int sMax )
 {
   //Init an empty vector, the first entry isnt used to make it the same as the factorial moment indicies
-  vector<vector<double>> q_r_s_vec(rMax+1, vector<double>(sMax+1, 0.0));
+  vector<vector<long double>> q_r_s_vec(rMax+1, vector<long double>(sMax+1, 0.0));
 
   for (int r=1;r<=rMax;r++)
     {
@@ -35,3 +35,11 @@ vector<vector<double>> make_all_q_s( vector<pair<int,double>> & track_eff_pair_v
   return q_r_s_vec;
   
 }
+
+/*
+charge efficiency 
+
+
+q[1][1] ... q[6][6]
+
+*/

@@ -32,7 +32,7 @@ void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed
   cout << "Filename = " << filename << endl;
 
   //Make Proton Efficiency Object 
-  ProtonEfficiency * eff =  new ProtonEfficiency("fitEmbedding.root","tof_eff.root");
+  ProtonEfficiency * eff =  new ProtonEfficiency("tpc_efficiency.root","tof_efficiency_fineBinning.root",pl);
   //  ProtonEfficiency * eff =  new ProtonEfficiency();
   //  eff->SetConstantEfficiency(1.0);
   

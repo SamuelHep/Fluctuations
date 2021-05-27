@@ -30,115 +30,30 @@ float getProtonDedxMeanShift(float p)
   return Mean[int((p-0.2)*10.)];
 
 }
+  
 
-
-vector<TGraphErrors*> MakeSysComparisonPlots(
-					     CumulantProfileContainer * primary,
-					     vector<CumulantProfileContainer*> sys,
-					     TString sysLabel,
-					     double start,
-					     double sysDelta
-					     )
-
+int ComputeBootstrapErrors(CumulantProfileContainer * primaryCpc, vector<CumulantProfileContainer*> cpc_vec)
 {
 
-  std::vector<TGraphErrors*> result_vec;
-  std::vector<TGraphErrors*> ngr_vec = primary->GetGraphVec();
-  std::vector<std::vector<TGraphErrors*>> sys_vector_of_ngr;
-  
-  for (int i=0;i<sys.size();i++)
+  for ( auto & key_graph_primary : primaryCpc->GetGraphMap() )
     {
-      std::vector<TGraphErrors*> sys_ngr_vec = sys[i]->GetGraphVec();
-      sys_vector_of_ngr.push_back( sys_ngr_vec );
-    }
-  
-  TString names[7] = {"Q1","Q2","Q3","Q4","Q2_Q1","Q3_Q2","Q4_Q2"}; 
-  
-  for( int iCent=0;iCent<ngr_vec[5]->GetN();iCent++)
-    {
-      int label = ngr_vec[5]->GetX()[iCent];
-      
-      for (int i=5;i<12;i++)
+      TString key = key_graph_primary.first;
+      TGraphErrors * primary_graph = key_graph_primary.second;
+      std::vector<TGraphErrors*> bootstrap_graphs;
+
+      for ( auto & bootstrap_container : cpc_vec )
 	{
-	  TGraphErrors * gr_comp = new TGraphErrors();
-	  double sysStart=start;
-	  
-	  TString name = TString::Format("Cent%i_%s_%s",label,names[i-5].Data(),sysLabel.Data());
-	  gr_comp->SetName(name);
-	  gr_comp->SetTitle(name);
-	  
-	  for (auto &g : sys_vector_of_ngr)
-	    {
-	      double x = g[i]->GetX()[iCent];
-	      double y = g[i]->GetY()[iCent];
-	      double yerr = g[i]->GetEY()[iCent];
-	      gr_comp->SetPoint(gr_comp->GetN(),sysStart,y);
-	      gr_comp->SetPointError(gr_comp->GetN()-1,0,yerr);
-	      sysStart += sysDelta;
-	    }
-
-	  result_vec.push_back(gr_comp);
-	  
+	  bootstrap_graphs.push_back( (TGraphErrors*) bootstrap_container->GetGraph( key ) );
 	}
-    }
 
-  double sysStart=start;
+      BootstrapGraph( primary_graph , bootstrap_graphs );
 
-  for ( auto &g_vec : sys_vector_of_ngr )
-    {
-      for ( auto &g : g_vec )
-	{
-	  TString currentName = g->GetName();
-	  TString newname = TString::Format("%s_%s_%.2f",currentName.Data(),sysLabel.Data(),sysStart);
-	  g->SetName( newname );
-	}
-      sysStart += sysDelta;
-    }
-
-
-  return result_vec;
-  
-}
-  
-
-int ComputeBootstrapErrors(CumulantProfileContainer * primaryCpc, vector<CumulantProfileContainer*> cpc_vec,std::vector<TGraphErrors*> & compare_graphs )
-{
-
-  std::vector<TGraphErrors*> ngr_vec;
-  std::vector<std::vector<TGraphErrors*>> bs_vector_of_ngr;
-
-  for (int i=0;i<cpc_vec.size();i++)
-    {
-      std::vector<TGraphErrors*> bs_ngr_vec = cpc_vec[i]->GetGraphVec();
-      bs_vector_of_ngr.push_back( bs_ngr_vec );
     }
   
-  ngr_vec = primaryCpc->GetGraphVec();
-  int primarySize = ngr_vec.size();
-
-  for ( auto &vec : bs_vector_of_ngr)
-    {
-      if ( vec.size() != primarySize )
-	{
-	  //	  cout << "Size mismatch of nGr" << endl;
-	  return 0;
-	}
-    }
-
-  for (int i=0; i<ngr_vec.size();i++)
-    {
-      std::vector<TGraphErrors*> vector_of_iGr;
-      for ( auto &vec : bs_vector_of_ngr)
-	{
-	  vector_of_iGr.push_back(vec[i]);
-	}
-      
-      TGraphErrors * gr_error = ngr_vec[6];
-      BootstrapGraph(ngr_vec[i],vector_of_iGr,gr_error,compare_graphs);
-
-    }
+  return 0;
 
 }
+
 
 int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec)
 {
@@ -172,61 +87,6 @@ int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec)
 
       gr->SetPointError(i,0,rms);
       
-    }
-
-  return 0;
-    
-}
-
-
-int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec, TGraphErrors * gr_err, std::vector<TGraphErrors*> &compare_graphs)
-{
-
-  for (int i=0;i<gr->GetN();i++)
-    {
-      double x = gr->GetX()[i];
-      double y = gr->GetY()[i];
-
-      double yerr = gr_err->GetY()[i];
-      yerr = yerr/sqrt(140000000); //What is going on here? Seems harmless tho...
-
-      //      cout << "original (x,y) = " << x << ", " << y << endl;
-
-      std::vector<double> msArray;
-      TGraphErrors * bs_check = new TGraphErrors();
-      TString checkname = gr->GetName();
-      bs_check->SetName( TString::Format("%s_checkErrors_%.02f",checkname.Data(),x) );
-
-      int iPoint=1;
-      bs_check->SetPoint(bs_check->GetN(),0,y);
-      bs_check->SetPointError(bs_check->GetN()-1,0,yerr);
-
-      for (auto & gr_bs : gr_vec)
-	{
-
-	  if (i >= gr->GetN()) continue;	 	  
-
-	  double x_bs = gr_bs->GetX()[i];
-	  double y_bs = gr_bs->GetY()[i];
-	  //	  cout << "    bs (x , y) = " << x_bs << ", " << y_bs << endl;      
-	  
-	  bs_check->SetPoint(bs_check->GetN(),iPoint,y_bs);
-	  bs_check->SetPointError(bs_check->GetN()-1,0,yerr);
-	  iPoint++;
-
-	  if ( fabs(x - x_bs) > 0.001 ) continue;
-	  msArray.push_back( pow((y - y_bs),2) );
-	}
-
-      double sum = accumulate(msArray.begin(),msArray.end(),0.0);
-      int n = gr_vec.size();
-      if ( n < 2 ) n = 2;
-      double rms = sqrt( sum/( n-1 ));
-
-      gr->SetPointError(i,0,rms);
-      
-      if ( checkname.Contains("binn") ) compare_graphs.push_back( bs_check );
-
     }
 
   return 0;
@@ -363,18 +223,18 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
   cout << "OUTFILE =" << outfilename << endl;
   cout << "HISTFILE=" << histfilename << endl;
 
-
   /*  std::vector<double> binLabels = { 10, 21, 32, 50, 74, 105, 149, 251};
   std::vector<int> binEdges     = {2, 5, 8, 13, 24, 29, 41, 50, 80};
   
   std::vector<double> binLabels = {39, 51, 64, 81, 100, 121, 146,  176, 210  , 248, 293, 345};
   std::vector<int> binEdges     = {2, 5, 8, 11,  13, 16, 20, 24, 29, 34, 41, 50, 90};
   */
-  std::vector<double> binLabels = {     47,   70,    107, 157, 219, 282,  326};
-    std::vector<int> binEdges     = { 4 + shift_cut,    6 + shift_cut,    10 + shift_cut,    16 + shift_cut,   25 + shift_cut,  38 + shift_cut, 48 + shift_cut, 80 + shift_cut};
+  std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
+  //CURRENT CENTRALITY DEFINITION
+  std::vector<int> binEdges     = { 4 + shift_cut,    6 + shift_cut,    10 + shift_cut,    16 + shift_cut,   25 + shift_cut,  38 + shift_cut, 48 + shift_cut, 79 + shift_cut};
+
   //  std::vector<int> binEdges     = { 5,    7,    11,    18,   26,  40, 49,   90}; //Up one
   //  std::vector<int> binEdges     = { 3,    5,    9,    16,   24,  38,  47,   90}; //Down one
-
 
   std::vector<CumulantProfileContainer*> cpc_vec;
   std::vector<CumulantProfileContainer*> cpc_uncor_vec;
@@ -388,12 +248,12 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
   CumulantProfileContainer * cpc_uncor_prime = puCorr_prime->LoadCumulant(infilename,kPrimary);
   CumulantProfileContainer * cpc_prime = puCorr_prime->CorrectionForMultRange(kPrimary,20,100);
   
-  cpc_prime->SetGraph(0,cpc_uncor_prime->GetWeightGraph());
+  //  cpc_prime->SetGraph("N",cpc_uncor_prime->GetWeightGraph());
   cpc_prime->ReBinAllGraphs(binEdges,binLabels);  
   cpc_uncor_prime->ReBinAllGraphs(binEdges,binLabels);  
 
-  cout << "Run over bootstrap cumulant profiles" << endl;
-
+  cout << "Run over bootstrap cumulant profiles" << endl; 
+  
   //Run the correction for the bootstraps
   for( int iBs=0;iBs<10;iBs++ )
     {
@@ -403,33 +263,128 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
       CumulantProfileContainer * cpc_uncor = puCorr->LoadCumulant(infilename,iBs);
       CumulantProfileContainer * cpc = puCorr->CorrectionForMultRange(iBs,20,100);
       
-      cpc->SetGraph(0,cpc_uncor->GetWeightGraph());
+      cpc->SetGraph("N",cpc_uncor->GetWeightGraph());
       cpc->ReBinAllGraphs(binEdges,binLabels);  
       cpc_uncor->ReBinAllGraphs(binEdges,binLabels);  
 
       cpc_vec.push_back(cpc);
       cpc_uncor_vec.push_back(cpc_uncor);
-
     }
 
-  std::vector<TGraphErrors*> compare_graphs_cor;
-  std::vector<TGraphErrors*> compare_graphs_uncor;
-  ComputeBootstrapErrors(cpc_prime,cpc_vec, compare_graphs_cor);
-  ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec, compare_graphs_uncor);
+  ComputeBootstrapErrors(cpc_prime,cpc_vec);
+  ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec);
+
+  cpc_uncor_prime->AmendGraphSuffix("_uncor");
 
   TFile * outfile = new TFile(outfilename,"recreate");
 
-  for( int i=0;i<cpc_prime->NGraphs();i++)
+  for ( auto & key_gr : cpc_prime->GetGraphMap() )
     {
-      TGraphErrors * gr = cpc_prime->GetNGraph(i);
-      TGraphErrors * gr_uncor = cpc_uncor_prime->GetNGraph(i);
-      gr->Write();
-      gr_uncor->Write();
-      delete gr;
-      delete gr_uncor;
+      key_gr.second->Write();
     }
 
+  for ( auto & key_gr : cpc_uncor_prime->GetGraphMap() )
+    {
+      key_gr.second->Write();
+    }
+
+  delete cpc_prime;
+  delete cpc_uncor_prime;
+
+  outfile->Close();
+
 }
+
+
+void RunNoCorr(TString infilename, TString outfilename) 
+{
+  
+  std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
+  //CURRENT CENTRALITY DEFINITION
+  std::vector<int> binEdges     = { 4 ,    6 ,    10 ,    16 ,   25 ,  38 , 48 , 79 };
+
+  std::vector<CumulantProfileContainer*> cpc_uncor_vec;
+
+  cout << "Run over primary cumulant profiles" << endl;
+
+  TFile * f = new TFile(infilename,"read");
+
+  //Run the correction for primary
+  CumulantProfileContainer * cpc_uncor_prime = new CumulantProfileContainer(f,kPrimary);
+  cpc_uncor_prime->MomentsToCumulants();
+
+  cpc_uncor_prime->ReBinAllGraphs(binEdges,binLabels);  
+  cout << "Run over bootstrap cumulant profiles" << endl;
+  
+  //Run the correction for the bootstraps
+  for( int iBs=0;iBs<10;iBs++ )
+    {
+      CumulantProfileContainer * cpc_uncor = new CumulantProfileContainer(f,iBs);
+      cpc_uncor->MomentsToCumulants();
+      cpc_uncor->ReBinAllGraphs(binEdges,binLabels);  
+      cpc_uncor_vec.push_back(cpc_uncor);
+
+    }
+
+  ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec);
+  cpc_uncor_prime->AmendGraphSuffix("_uncor");
+
+  TFile * outfile = new TFile(outfilename,"recreate");
+
+  for ( auto & key_gr : cpc_uncor_prime->GetGraphMap() )
+    {
+      key_gr.second->Write();
+    }
+
+  delete cpc_uncor_prime;
+
+}
+
+void RunNoCorrNoCBWC(TString infilename, TString outfilename) 
+{
+  
+  //  std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
+  std::vector<double> binLabels = { 326, 282, 219, 157, 107, 70,  47};
+  //CURRENT CENTRALITY DEFINITION
+  std::vector<int> binEdges     = { 0 ,    1 ,    2 ,   3 ,   4, 5 , 6 , 7 };
+
+  std::vector<CumulantProfileContainer*> cpc_uncor_vec;
+
+  cout << "Run over primary cumulant profiles" << endl;
+
+  TFile * f = new TFile(infilename,"read");
+
+  //Run the correction for primary
+  CumulantProfileContainer * cpc_uncor_prime = new CumulantProfileContainer(f,kPrimary);
+  cpc_uncor_prime->MomentsToCumulants();
+
+  cpc_uncor_prime->ReBinAllGraphs(binEdges,binLabels);  
+  cout << "Run over bootstrap cumulant profiles" << endl;
+  
+  //Run the correction for the bootstraps
+  for( int iBs=0;iBs<10;iBs++ )
+    {
+      CumulantProfileContainer * cpc_uncor = new CumulantProfileContainer(f,iBs);
+      cpc_uncor->MomentsToCumulants();
+      cpc_uncor->ReBinAllGraphs(binEdges,binLabels);  
+      cpc_uncor_vec.push_back(cpc_uncor);
+
+    }
+
+  ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec);
+  cpc_uncor_prime->AmendGraphSuffix("_uncor");
+
+  TFile * outfile = new TFile(outfilename,"recreate");
+
+  for ( auto & key_gr : cpc_uncor_prime->GetGraphMap() )
+    {
+      key_gr.second->Write();
+    }
+
+  delete cpc_uncor_prime;
+
+}
+
 
 pair<bool,bool> PileUpBadEvent(int fxt, double nmip,double pipdu)
 {
@@ -585,24 +540,26 @@ int CentBinTofMatch(int mult)
   else return 12;
 }
 
+
 int CentBin3(int mult)
 {
-  if (mult > 80) return -1;
-  if (mult > 52) return 0;
-  if (mult > 44) return 1;
-  if (mult > 36) return 2;
-  if (mult > 30) return 3;
-  if (mult > 25) return 4;
-  if (mult > 21) return 5;
-  if (mult > 17) return 6;
-  if (mult > 14) return 7;
-  if (mult > 11) return 8;
-  if (mult > 9) return 9;
-  if (mult > 7) return 10;
-  if (mult > 6) return 11;
-  if (mult > 4) return 12;
-  if (mult > 3) return 13;
-  else return 14;
+  if (mult > 79) return -1;
+  if (mult > 48) return 0;
+  if (mult > 38) return 1;
+  if (mult > 25) return 2;
+  if (mult > 16) return 3;
+  if (mult > 10) return 4;
+  if (mult > 6) return 5;
+  if (mult > 4) return 6;
+  if (mult >= 0) return 7;
+  //  if (mult > 14) return 7;
+  //  if (mult > 11) return 8;
+  //  if (mult > 9) return 9;
+  //  if (mult > 7) return 10;
+  //  if (mult > 6) return 11;
+  //  if (mult > 4) return 12;
+  //  if (mult > 3) return 13;
+  else return -1;
 }
 
 

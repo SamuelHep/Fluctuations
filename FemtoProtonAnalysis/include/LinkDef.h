@@ -11,16 +11,19 @@
 #pragma link C++ class ProtonEfficiency+;
 #pragma link C++ class StFemtoTrack+;
 #pragma link C++ class StFemtoEvent+;
+#pragma link C++ class TOFEfficiencyMaker+;
 
 #pragma link C++ defined_in "MomentFunctions.h";
+#pragma link C++ defined_in "CumulantFunctions.h";
 #pragma link C++ defined_in "analysisUtil.h";
 #pragma link C++ defined_in "EventLoop.h";
 #pragma link C++ defined_in "MomentEventLoop.h";
-#pragma link C++ defined_in "SystematicEventLoop.h";
+//#pragma link C++ defined_in "SystematicEventLoop.h";
 #pragma link C++ defined_in "QALoop.h";
 #pragma link C++ defined_in "FlucContainer.h";
 #pragma link C++ defined_in "PileUpCorrection.h";
 #pragma link C++ defined_in "SystematicCalculation.h";
+#pragma link C++ defined_in "ProcessEmbedding.h";
 
 
 #endif

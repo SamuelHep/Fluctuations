@@ -1,8 +1,11 @@
+
+
 void RunSimplePlots(TString filelist,TString parameterFile, TString InputFile_forSeed)
+//void RunSimplePlots(TString filelist="../input_parameters/femto_nCharge_test.list",TString parameterFile="../input_parameters/parameter_n0p5_0_norm.list", TString InputFile_forSeed="/gpfs/mnt/gpfs01/star/pwg/sheppel/femtoDsts_2_15/652B7E50FD98B25D966180D8B6A7AC7E_0.fDst.root")
 {
 
-  //  gSystem->Load("momentCode.so");
-  gSystem->Load("../lib/momentCode.so");
+  gSystem->Load("momentCode.so");
+  // gSystem->Load("../lib/momentCode.so");
 
   //Get Number from filename
   TObjArray * tokens = InputFile_forSeed.Tokenize("_");

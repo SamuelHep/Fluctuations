@@ -18,9 +18,10 @@
     <File>file:&inputParameter3;</File>
     <File>file:&inputParameter4;</File>
     <File>file:&inputParameter5;</File>
+    <File>file:&inputParameter6;</File>
     <File>file:&workDir;/macros/RunEvents.C</File>
-    <File>file:&workDir;/rootfiles/eff/fitEmbedding.root</File>
-    <File>file:&workDir;/rootfiles/eff/tof_eff.root</File>
+    <File>file:&workDir;/rootfiles/eff/tpc_efficiency.root</File>
+    <File>file:&workDir;/rootfiles/eff/tof_efficiency_fineBinning.root</File> 
    </Package>
   </SandBox> 
 
@@ -35,6 +36,7 @@
     set parameterList3 = `basename &inputParameter3;`
     set parameterList4 = `basename &inputParameter4;`
     set parameterList5 = `basename &inputParameter5;`
+    set parameterList6 = `basename &inputParameter6;`
 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList0\",\"$INPUTFILE0\"\) 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList1\",\"$INPUTFILE0\"\) 
@@ -42,6 +44,7 @@
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList3\",\"$INPUTFILE0\"\) 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList4\",\"$INPUTFILE0\"\) 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList5\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList6\",\"$INPUTFILE0\"\) 
 
     </command>
     
