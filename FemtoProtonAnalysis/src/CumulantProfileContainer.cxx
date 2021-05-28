@@ -1,3 +1,18 @@
+
+/*
+CumulantProfileContainer is the main analysis class.
+What the class does:
+1. Takes bivariate moments (m_r_s) from an event and calculates
+   all the needed variables i.e: m_1_1, m_1_1*m_1_1 ... m_1_1*m_2_1*m_2_1.
+2. bivariate moment variables are put in profiles
+3. After running through every event, profiles are converted from moments to cumulants
+4. Cumulants are rebinned with CBWC method and cumulant ratios are calcuted
+
+The class is designed to have steps 1 and 2 run through condor, while 3 and 4 are run locally.
+
+The code to calculate m_r_s is in src/MomentFunctions.cxx
+ */
+
 #include <iostream>
 #include <vector>
 #include <utility>
@@ -16,6 +31,7 @@ ClassImp(CumulantProfileContainer)
 
 using namespace std;
 
+//Basic Constructor
 CumulantProfileContainer::CumulantProfileContainer(int iName)
 {
   
@@ -24,12 +40,12 @@ CumulantProfileContainer::CumulantProfileContainer(int iName)
 
 }
 
-
+//Takes an array of cumulants and fills the CumulantProfileContainer Graphs (C1, C2, C3, ... )
+//This is used after in the pileup correction code
 CumulantProfileContainer::CumulantProfileContainer(int iName,TString label,TH1F * multHist,LongDouble_t Cumulants[300][7],int MaxMult)
 {
 
   InitGraphs(iName); // initialized _gr[""] 
-
 
   for (int iMult=0;iMult<MaxMult;iMult++)
     {
@@ -67,20 +83,19 @@ CumulantProfileContainer::CumulantProfileContainer(int iName,TString label,TH1F 
   
 }
 
-
+//Inits the class from a TFile with filed profiles
 CumulantProfileContainer::CumulantProfileContainer(TFile *f,int iName)
 {
-  
   InitProfiles(iName,f); //Load profiles
   InitGraphs(iName); // initialized _gr[""] 
-
 }
 
+//Destructor
 CumulantProfileContainer::~CumulantProfileContainer()
 {
-
 }
 
+//If you want to change the names of your graphs C1 -> C1_uncor
 void CumulantProfileContainer::AmendGraphSuffix( TString suffix ) 
 {
   for ( auto &gr_map : _gr ) 
@@ -89,6 +104,7 @@ void CumulantProfileContainer::AmendGraphSuffix( TString suffix )
     }
 }
 
+//Initializes all the graphs and sets their names
 void CumulantProfileContainer::InitGraphs(int iName)
 {
 
@@ -161,7 +177,7 @@ void CumulantProfileContainer::InitGraphs(int iName)
 
 }
 
-
+//Set all the profiles to NULL and then load or make new profiles
 void CumulantProfileContainer::InitProfiles(int iName, TFile * file)
 {
 
@@ -298,6 +314,7 @@ void CumulantProfileContainer::InitProfiles(int iName, TFile * file)
   
 }
 
+//Calculate the m_r_s variables to be averaged 
 void CumulantProfileContainer::FillBiVariateMoments(std::vector<std::vector<long double>> & m_r_s)
 {
 
@@ -417,6 +434,7 @@ void CumulantProfileContainer::FillBiVariateMoments(std::vector<std::vector<long
 
 }
 
+//Fill m_r_s for a give centrality bin
 void CumulantProfileContainer::FillProfile(int cent, std::vector<std::vector<long double>> m_r_s)
 {
 
@@ -430,7 +448,7 @@ void CumulantProfileContainer::FillProfile(int cent, std::vector<std::vector<lon
 
 }
 
-
+//Bivariate moments to bivariate cumulants 
 void CumulantProfileContainer::InitCumulantMap(int cent)
 {
   
@@ -443,10 +461,7 @@ void CumulantProfileContainer::InitCumulantMap(int cent)
       TProfile * profile = _key_profile.second;
       long double val = profile->GetBinContent( profile->FindBin(cent) );
       m[ key ] = val;
-          }
-
-  //  for ( auto & val : m ) { cout << val.first << " = " <<  val.second << endl;; }
-
+    }
 
   q["q11"]         = m["m11"];
   q["q11_2"]       = q_ab(m["m11_2"], m["m11"], m["m11"]);
@@ -466,9 +481,6 @@ void CumulantProfileContainer::InitCumulantMap(int cent)
   long double q11_4 = m["m11_4"] - 4*m["m11_3"]*m["m11"] -3*m["m11_2"]*m["m11_2"] + //q(1,1)^4
     12*m["m11_2"]*m["m11"]*m["m11"] -6*m["m11"]*m["m11"]*m["m11"]*m["m11"];
   
-  //  cout << "Diff ? " << "new = " << q["q11_4"] << " old = " << q11_4 << endl;
-
-
 
   q["q11_2_q21"]   = q_abc( m["m11_2_m21"], m["m11_2"], m["m11_m21"], m["m11_m21"], m["m11"], m["m11"], m["m21"] );
   q["q11_2_q22"]   = q_abc( m["m11_2_m22"], m["m11_2"], m["m11_m22"], m["m11_m22"], m["m11"], m["m11"], m["m22"] );
@@ -525,11 +537,7 @@ void CumulantProfileContainer::InitCumulantMap(int cent)
 			      m["m11_2"], m["m11_2"], m["m11_2"], m["m11_2"], m["m11_2"],
 			      m["m11"], m["m11"], m["m11"], m["m11"], m["m11"] );
   
-
-  
-
   //Values for 6th order cumulant
-
 
   q["q11_4_q21"] = q_abcde( m["m11_4_m21"],
 			    m["m11_4"], m["m11_3_m21"], m["m11_3_m21"], m["m11_3_m21"], m["m11_3_m21"],
@@ -635,18 +643,18 @@ void CumulantProfileContainer::InitCumulantMap(int cent)
 
 }
 
-
+//bivariate moments to cumulants
 void CumulantProfileContainer::MomentsToCumulants()
 {
 
   for(int i=0;i<300;i++)
     {
-     double entries  = _profile["m11"]->GetBinEntries(i);
+      double entries  = _profile["m11"]->GetBinEntries(i);
       if(entries < 1.0 ) continue;
       int cent = _profile["m11"]->GetBinCenter(i);
-
+      
       InitCumulantMap(cent); // Fills all the m[] values
-            
+      
       double Q1 = q["q11"];
       
       double Q2 = q["q11_2"] + q["q21"] - q["q22"];
@@ -668,97 +676,83 @@ void CumulantProfileContainer::MomentsToCumulants()
 	-10*q["q22_q31"] +30*q["q22_q32"] -20*q["q22_q33"]
 	+q["q51"] -15*q["q52"] +50*q["q53"] - 60*q["q54"] + 24*q["q55"];
 
-      /*      double Q6 = q["q11_6"] + 15*q["q11_4_q21"] -15*q["q11_4_q22"] +20*q["q11_3_q31"] -60*q["q11_3_q32"]
-	+40*q["q11_3_q33"] -90*q["q11_2_q22_q21"] +45*q["q11_2_q21_2"] + 45*q["q11_2_q22_2"]
-	+15*q["q21_3"] -15*q["q22_3"] +15*q["q11_2_q41"] -105*q["q11_2_q42"] +180*q["q11_2_q43"] -90*q["q11_2_q44"]
-	-45*q["q21_2_q22"] + 45*q["q22_2_q21"] +60*q["q11_q21_q31"] -180*q["q11_q21_q32"]
-	+120*q["q11_q21_q33"] -60*q["q11_q22_q31"] +180*q["q11_q22_q32"] -120*q["q11_q22_q33"]
-	+6*q["q11_q51"] -90*q["q11_q52"] +300*q["q11_q53"] -360*q["q11_q54"] +144*q["q11_q55"]
-	+15*q["q21_q41"] -105*q["q21_q42"] +180*q["q21_q43"] -90*q["q21_q44"]
-	-15*q["q22_q41"] +105*q["q22_q42"] -180*q["q22_q43"] +90*q["q22_q44"]
-	+10*q["q31_2"] -60*q["q31_q32"] + 40*q["q31_q33"] +90*q["q32_2"] - 120*q["q32_q33"] +40*q["q33_2"]
-	+q["q61"] -31*q["q62"] +180*q["q63"] -390*q["q64"] + 360*q["q65"] -120*q["q66"]; */
-
-
-  long double Q6 =  -120*pow(m["m11"],6)+360*pow(m["m11"],4)*m["m11_2"]-270*pow(m["m11"],2)*pow(m["m11_2"],2)
-    +30*pow(m["m11_2"],3)-120*pow(m["m11"],3)*m["m11_3"]+120*m["m11"]*m["m11_2"]*m["m11_3"]
-    -10*pow(m["m11_3"],2)+30*pow(m["m11"],2)*m["m11_4"]-15*m["m11_2"]*m["m11_4"]-6*m["m11"]*m["m11_5"]
-    +m["m11_6"]
-    +15*(24*pow(m["m11"],4)*m["m21"]-24*pow(m["m11"],3)*m["m11_m21"]-36*m["m21"]*pow(m["m11"],2)*m["m11_2"]
-	 +24*m["m11"]*m["m11_m21"]*m["m11_2"]+6*m["m21"]*pow(m["m11_2"],2)+12*pow(m["m11"],2)*m["m11_2_m21"]
-	 -6*m["m11_2"]*m["m11_2_m21"]+8*m["m21"]*m["m11"]*m["m11_3"]-4*m["m11_m21"]*m["m11_3"]
-	 -4*m["m11"]*m["m11_3_m21"]-m["m21"]*m["m11_4"]+m["m11_4_m21"])
-    -15*(24*pow(m["m11"],4)*m["m22"]-24*pow(m["m11"],3)*m["m11_m22"]-36*m["m22"]*pow(m["m11"],2)*m["m11_2"]
-	 +24*m["m11"]*m["m11_m22"]*m["m11_2"]+6*m["m22"]*pow(m["m11_2"],2)+12*pow(m["m11"],2)*m["m11_2_m22"]
-	 -6*m["m11_2"]*m["m11_2_m22"]+8*m["m22"]*m["m11"]*m["m11_3"]-4*m["m11_m22"]*m["m11_3"]
-	 -4*m["m11"]*m["m11_3_m22"]-m["m22"]*m["m11_4"]+m["m11_4_m22"])
-    +20*(-6*pow(m["m11"],3)*m["m31"]+6*m["m11"]*m["m11_2"]*m["m31"]-m["m11_3"]*m["m31"]
-	 +6*pow(m["m11"],2)*m["m11_m31"]-3*m["m11_2"]*m["m11_m31"]-3*m["m11"]*m["m11_2_m31"]
-	 +m["m11_3_m31"])
-    -60*(-6*pow(m["m11"],3)*m["m32"]+6*m["m11"]*m["m11_2"]*m["m32"]-m["m11_3"]*m["m32"]
-	 +6*pow(m["m11"],2)*m["m11_m32"]-3*m["m11_2"]*m["m11_m32"]-3*m["m11"]*m["m11_2_m32"]
-	 +m["m11_3_m32"])
-    +40*(-6*pow(m["m11"],3)*m["m33"]+6*m["m11"]*m["m11_2"]*m["m33"]-m["m11_3"]*m["m33"]
-	 +6*pow(m["m11"],2)*m["m11_m33"]-3*m["m11_2"]*m["m11_m33"]-3*m["m11"]*m["m11_2_m33"]
-	 +m["m11_3_m33"])
-    -90*(-6*m["m21"]*m["m22"]*pow(m["m11"],2)+2*m["m21_m22"]*pow(m["m11"],2)+4*m["m22"]*m["m11"]*m["m11_m21"]
-	 +4*m["m21"]*m["m11"]*m["m11_m22"]-2*m["m11_m21"]*m["m11_m22"]-2*m["m11"]*m["m11_m21_m22"]
-	 +2*m["m21"]*m["m22"]*m["m11_2"]-m["m21_m22"]*m["m11_2"]-m["m22"]*m["m11_2_m21"]-m["m21"]*m["m11_2_m22"]
-	 +m["m11_2_m22_m21"])
-    +45*(-6*pow(m["m21"],2)*pow(m["m11"],2)+2*pow(m["m11"],2)*m["m21_2"]+8*m["m11"]*m["m21"]*m["m11_m21"]
-	 -2*pow(m["m11_m21"],2)-2*m["m11"]*m["m21_2_m11"]+2*pow(m["m21"],2)*m["m11_2"]-m["m11_2"]*m["m21_2"]
-	 -2*m["m21"]*m["m11_2_m21"]+m["m11_2_m21_2"])
-    +45*(-6*pow(m["m22"],2)*pow(m["m11"],2)+2*pow(m["m11"],2)*m["m22_2"]+8*m["m11"]*m["m22"]*m["m11_m22"]
-	 -2*pow(m["m11_m22"],2)-2*m["m11"]*m["m22_2_m11"]+2*pow(m["m22"],2)*m["m11_2"]-m["m11_2"]*m["m22_2"]
-	 -2*m["m22"]*m["m11_2_m22"]+m["m11_2_m22_2"])
-    +15*(2*pow(m["m21"],3)-3*m["m21"]*m["m21_2"]+m["m21_3"])
-    -15*(2*pow(m["m22"],3)-3*m["m22"]*m["m22_2"]+m["m22_3"])
-    +15* (m["m11_2_m41"]-m["m11_2"]*m["m41"]-2*m["m11"]*m["m11_m41"]+2*pow(m["m11"],2)*m["m41"])
-    -105*(m["m11_2_m42"]-m["m11_2"]*m["m42"]-2*m["m11"]*m["m11_m42"]+2*pow(m["m11"],2)*m["m42"])
-    +180*(m["m11_2_m43"]-m["m11_2"]*m["m43"]-2*m["m11"]*m["m11_m43"]+2*pow(m["m11"],2)*m["m43"])
-    -90* (m["m11_2_m44"]-m["m11_2"]*m["m44"]-2*m["m11"]*m["m11_m44"]+2*pow(m["m11"],2)*m["m44"])
-    -45* (m["m21_2_m22"]-m["m21_2"]*m["m22"]-2*m["m21"]*m["m21_m22"]+2*pow(m["m21"],2)*m["m22"])
-    +45* (m["m22_2_m21"]-m["m22_2"]*m["m21"]-2*m["m22"]*m["m21_m22"]+2*pow(m["m22"],2)*m["m21"])
-    +60* (m["m11_m21_m31"]-m["m11_m21"]*m["m31"]-m["m11_m31"]*m["m21"]-m["m21_m31"]*m["m11"]+2*m["m11"]*m["m21"]*m["m31"])
-    -180*(m["m11_m21_m32"]-m["m11_m21"]*m["m32"]-m["m11_m32"]*m["m21"]-m["m21_m32"]*m["m11"]+2*m["m11"]*m["m21"]*m["m32"])
-    +120*(m["m11_m21_m33"]-m["m11_m21"]*m["m33"]-m["m11_m33"]*m["m21"]-m["m21_m33"]*m["m11"]+2*m["m11"]*m["m21"]*m["m33"])
-    -60* (m["m11_m22_m31"]-m["m11_m22"]*m["m31"]-m["m11_m31"]*m["m22"]-m["m22_m31"]*m["m11"]+2*m["m11"]*m["m22"]*m["m31"])
-    +180*(m["m11_m22_m32"]-m["m11_m22"]*m["m32"]-m["m11_m32"]*m["m22"]-m["m22_m32"]*m["m11"]+2*m["m11"]*m["m22"]*m["m32"])
-    -120*(m["m11_m22_m33"]-m["m11_m22"]*m["m33"]-m["m11_m33"]*m["m22"]-m["m22_m33"]*m["m11"]+2*m["m11"]*m["m22"]*m["m33"])
-    +6*  (m["m11_m51"]-m["m11"]*m["m51"])
-    -90* (m["m11_m52"]-m["m11"]*m["m52"])
-    +300*(m["m11_m53"]-m["m11"]*m["m53"])
-    -360*(m["m11_m54"]-m["m11"]*m["m54"])
-    +144*(m["m11_m55"]-m["m11"]*m["m55"])
-    +15* (m["m21_m41"]-m["m21"]*m["m41"])
-    -105*(m["m21_m42"]-m["m21"]*m["m42"])
-    +180*(m["m21_m43"]-m["m21"]*m["m43"])
-    -90* (m["m21_m44"]-m["m21"]*m["m44"])
-    -15* (m["m22_m41"]-m["m22"]*m["m41"])
-    +105*(m["m22_m42"]-m["m22"]*m["m42"])
-    -180*(m["m22_m43"]-m["m22"]*m["m43"])
-    +90* (m["m22_m44"]-m["m22"]*m["m44"])
-    +10* (m["m31_2"]  -  pow(m["m31"],2))
-    -60* (m["m31_m32"]-m["m31"]*m["m32"])
-    +40* (m["m31_m33"]-m["m31"]*m["m33"])
-    +90* (m["m32_2"]  -  pow(m["m32"],2))
-    -120*(m["m32_m33"]-m["m32"]*m["m33"])
-    +40* (m["m33_2"]  -  pow(m["m33"],2))
-                +    m["m61"] 
-                -31* m["m62"] 
-                +180*m["m63"] 
-                -390*m["m64"] 
-                +360*m["m65"]
-    -120*m["m66"];
-
-
+      long double Q6 =  -120*pow(m["m11"],6)+360*pow(m["m11"],4)*m["m11_2"]-270*pow(m["m11"],2)*pow(m["m11_2"],2)
+	+30*pow(m["m11_2"],3)-120*pow(m["m11"],3)*m["m11_3"]+120*m["m11"]*m["m11_2"]*m["m11_3"]
+	-10*pow(m["m11_3"],2)+30*pow(m["m11"],2)*m["m11_4"]-15*m["m11_2"]*m["m11_4"]-6*m["m11"]*m["m11_5"]
+	+m["m11_6"]
+	+15*(24*pow(m["m11"],4)*m["m21"]-24*pow(m["m11"],3)*m["m11_m21"]-36*m["m21"]*pow(m["m11"],2)*m["m11_2"]
+	     +24*m["m11"]*m["m11_m21"]*m["m11_2"]+6*m["m21"]*pow(m["m11_2"],2)+12*pow(m["m11"],2)*m["m11_2_m21"]
+	     -6*m["m11_2"]*m["m11_2_m21"]+8*m["m21"]*m["m11"]*m["m11_3"]-4*m["m11_m21"]*m["m11_3"]
+	     -4*m["m11"]*m["m11_3_m21"]-m["m21"]*m["m11_4"]+m["m11_4_m21"])
+	-15*(24*pow(m["m11"],4)*m["m22"]-24*pow(m["m11"],3)*m["m11_m22"]-36*m["m22"]*pow(m["m11"],2)*m["m11_2"]
+	     +24*m["m11"]*m["m11_m22"]*m["m11_2"]+6*m["m22"]*pow(m["m11_2"],2)+12*pow(m["m11"],2)*m["m11_2_m22"]
+	     -6*m["m11_2"]*m["m11_2_m22"]+8*m["m22"]*m["m11"]*m["m11_3"]-4*m["m11_m22"]*m["m11_3"]
+	     -4*m["m11"]*m["m11_3_m22"]-m["m22"]*m["m11_4"]+m["m11_4_m22"])
+	+20*(-6*pow(m["m11"],3)*m["m31"]+6*m["m11"]*m["m11_2"]*m["m31"]-m["m11_3"]*m["m31"]
+	     +6*pow(m["m11"],2)*m["m11_m31"]-3*m["m11_2"]*m["m11_m31"]-3*m["m11"]*m["m11_2_m31"]
+	     +m["m11_3_m31"])
+	-60*(-6*pow(m["m11"],3)*m["m32"]+6*m["m11"]*m["m11_2"]*m["m32"]-m["m11_3"]*m["m32"]
+	     +6*pow(m["m11"],2)*m["m11_m32"]-3*m["m11_2"]*m["m11_m32"]-3*m["m11"]*m["m11_2_m32"]
+	     +m["m11_3_m32"])
+	+40*(-6*pow(m["m11"],3)*m["m33"]+6*m["m11"]*m["m11_2"]*m["m33"]-m["m11_3"]*m["m33"]
+	     +6*pow(m["m11"],2)*m["m11_m33"]-3*m["m11_2"]*m["m11_m33"]-3*m["m11"]*m["m11_2_m33"]
+	     +m["m11_3_m33"])
+	-90*(-6*m["m21"]*m["m22"]*pow(m["m11"],2)+2*m["m21_m22"]*pow(m["m11"],2)+4*m["m22"]*m["m11"]*m["m11_m21"]
+	     +4*m["m21"]*m["m11"]*m["m11_m22"]-2*m["m11_m21"]*m["m11_m22"]-2*m["m11"]*m["m11_m21_m22"]
+	     +2*m["m21"]*m["m22"]*m["m11_2"]-m["m21_m22"]*m["m11_2"]-m["m22"]*m["m11_2_m21"]-m["m21"]*m["m11_2_m22"]
+	     +m["m11_2_m22_m21"])
+	+45*(-6*pow(m["m21"],2)*pow(m["m11"],2)+2*pow(m["m11"],2)*m["m21_2"]+8*m["m11"]*m["m21"]*m["m11_m21"]
+	     -2*pow(m["m11_m21"],2)-2*m["m11"]*m["m21_2_m11"]+2*pow(m["m21"],2)*m["m11_2"]-m["m11_2"]*m["m21_2"]
+	     -2*m["m21"]*m["m11_2_m21"]+m["m11_2_m21_2"])
+	+45*(-6*pow(m["m22"],2)*pow(m["m11"],2)+2*pow(m["m11"],2)*m["m22_2"]+8*m["m11"]*m["m22"]*m["m11_m22"]
+	     -2*pow(m["m11_m22"],2)-2*m["m11"]*m["m22_2_m11"]+2*pow(m["m22"],2)*m["m11_2"]-m["m11_2"]*m["m22_2"]
+	     -2*m["m22"]*m["m11_2_m22"]+m["m11_2_m22_2"])
+	+15*(2*pow(m["m21"],3)-3*m["m21"]*m["m21_2"]+m["m21_3"])
+	-15*(2*pow(m["m22"],3)-3*m["m22"]*m["m22_2"]+m["m22_3"])
+	+15* (m["m11_2_m41"]-m["m11_2"]*m["m41"]-2*m["m11"]*m["m11_m41"]+2*pow(m["m11"],2)*m["m41"])
+	-105*(m["m11_2_m42"]-m["m11_2"]*m["m42"]-2*m["m11"]*m["m11_m42"]+2*pow(m["m11"],2)*m["m42"])
+	+180*(m["m11_2_m43"]-m["m11_2"]*m["m43"]-2*m["m11"]*m["m11_m43"]+2*pow(m["m11"],2)*m["m43"])
+	-90* (m["m11_2_m44"]-m["m11_2"]*m["m44"]-2*m["m11"]*m["m11_m44"]+2*pow(m["m11"],2)*m["m44"])
+	-45* (m["m21_2_m22"]-m["m21_2"]*m["m22"]-2*m["m21"]*m["m21_m22"]+2*pow(m["m21"],2)*m["m22"])
+	+45* (m["m22_2_m21"]-m["m22_2"]*m["m21"]-2*m["m22"]*m["m21_m22"]+2*pow(m["m22"],2)*m["m21"])
+	+60* (m["m11_m21_m31"]-m["m11_m21"]*m["m31"]-m["m11_m31"]*m["m21"]-m["m21_m31"]*m["m11"]+2*m["m11"]*m["m21"]*m["m31"])
+	-180*(m["m11_m21_m32"]-m["m11_m21"]*m["m32"]-m["m11_m32"]*m["m21"]-m["m21_m32"]*m["m11"]+2*m["m11"]*m["m21"]*m["m32"])
+	+120*(m["m11_m21_m33"]-m["m11_m21"]*m["m33"]-m["m11_m33"]*m["m21"]-m["m21_m33"]*m["m11"]+2*m["m11"]*m["m21"]*m["m33"])
+	-60* (m["m11_m22_m31"]-m["m11_m22"]*m["m31"]-m["m11_m31"]*m["m22"]-m["m22_m31"]*m["m11"]+2*m["m11"]*m["m22"]*m["m31"])
+	+180*(m["m11_m22_m32"]-m["m11_m22"]*m["m32"]-m["m11_m32"]*m["m22"]-m["m22_m32"]*m["m11"]+2*m["m11"]*m["m22"]*m["m32"])
+	-120*(m["m11_m22_m33"]-m["m11_m22"]*m["m33"]-m["m11_m33"]*m["m22"]-m["m22_m33"]*m["m11"]+2*m["m11"]*m["m22"]*m["m33"])
+	+6*  (m["m11_m51"]-m["m11"]*m["m51"])
+	-90* (m["m11_m52"]-m["m11"]*m["m52"])
+	+300*(m["m11_m53"]-m["m11"]*m["m53"])
+	-360*(m["m11_m54"]-m["m11"]*m["m54"])
+	+144*(m["m11_m55"]-m["m11"]*m["m55"])
+	+15* (m["m21_m41"]-m["m21"]*m["m41"])
+	-105*(m["m21_m42"]-m["m21"]*m["m42"])
+	+180*(m["m21_m43"]-m["m21"]*m["m43"])
+	-90* (m["m21_m44"]-m["m21"]*m["m44"])
+	-15* (m["m22_m41"]-m["m22"]*m["m41"])
+	+105*(m["m22_m42"]-m["m22"]*m["m42"])
+	-180*(m["m22_m43"]-m["m22"]*m["m43"])
+	+90* (m["m22_m44"]-m["m22"]*m["m44"])
+	+10* (m["m31_2"]  -  pow(m["m31"],2))
+	-60* (m["m31_m32"]-m["m31"]*m["m32"])
+	+40* (m["m31_m33"]-m["m31"]*m["m33"])
+	+90* (m["m32_2"]  -  pow(m["m32"],2))
+	-120*(m["m32_m33"]-m["m32"]*m["m33"])
+	+40* (m["m33_2"]  -  pow(m["m33"],2))
+	+    m["m61"] 
+	-31* m["m62"] 
+	+180*m["m63"] 
+	-390*m["m64"] 
+	+360*m["m65"]
+	-120*m["m66"];
+      
       double K1 = Q1;
       double K2 = Q2 - K1;
       double K3 = Q3 - 3*Q2 +2*Q1;
       double K4 = -6*Q1 + 11*Q2 -6*Q3 + Q4;
       double K5 = -10*Q4 + 35*Q3 -50*Q2 + 24*Q1 + Q5;
       double K6 = -120*Q1 + 274*Q2 - 225*Q3 + 85*Q4 - 15*Q5 + Q6;
-
 
       _gr["N"]->SetPoint(_gr["N"]->GetN(),cent, entries);
       _gr["C1"]->SetPoint(_gr["C1"]->GetN(), cent, Q1);
@@ -779,7 +773,7 @@ void CumulantProfileContainer::MomentsToCumulants()
   
 }
 
-
+//Calls ReBin( ... ) for all cumulants and cumulant ratios
 void CumulantProfileContainer::ReBinAllGraphs(std::vector<int> binEdges, std::vector<double> binLabels)
 {
 
@@ -823,7 +817,7 @@ void CumulantProfileContainer::ReBinAllGraphs(std::vector<int> binEdges, std::ve
   
 }
 
-
+//Perform CBWC
 void CumulantProfileContainer::ReBin(std::vector<int> &binEdges,std::vector<double> &binLabels,TGraphErrors * Ngr, TGraphErrors * Qgr,TGraphErrors * Qgr_cbwc)
 {
 
@@ -866,6 +860,7 @@ void CumulantProfileContainer::ReBin(std::vector<int> &binEdges,std::vector<doub
   
 }
 
+//Take the ratio of two graphs
 void CumulantProfileContainer::RatioGraphs(TGraphErrors * num_gr, TGraphErrors * denom_gr, TGraphErrors * ratioGr)
 {
   if ( num_gr->GetN() != denom_gr->GetN())
@@ -880,5 +875,4 @@ void CumulantProfileContainer::RatioGraphs(TGraphErrors * num_gr, TGraphErrors *
       double ratio =num_gr->GetY()[iPoint]/denom_gr->GetY()[iPoint];
       ratioGr->SetPoint(ratioGr->GetN(),num_gr->GetX()[iPoint],ratio);
     }
-
 }

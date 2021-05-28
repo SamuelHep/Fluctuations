@@ -92,6 +92,12 @@ bool InputParameterList::ApplySystematic(TString var, double value)
       return true;
     }
 
+  if ( !var.CompareTo("PtHigh") )
+    {
+      _parameterMap["PtHigh"] =  value;
+      return true;
+    }
+
   return false;
 
 }

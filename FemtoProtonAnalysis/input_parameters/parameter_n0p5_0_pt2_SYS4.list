@@ -1,0 +1,16 @@
+Dca 3
+EffMultiplier 1.05
+Mass2High 1.2
+Mass2Low 0.6
+Mom 2
+NHitsFitMin 10
+NSigmaPionCut 0
+NSigmaProtonCut 2
+NSigmaProtonnCut 3
+PtHigh 1.2
+PtLow 0.4
+RapHigh 1.049
+RapLow 0.549
+VrMax 1.5
+VzMax 202
+VzMin 199.5

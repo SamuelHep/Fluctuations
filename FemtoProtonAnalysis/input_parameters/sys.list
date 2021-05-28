@@ -1,0 +1,6 @@
+SYS1 NHitsFitMin 12
+SYS2 NHitsFitMin 15
+SYS3 EffMultiplier 0.95
+SYS4 EffMultiplier 1.05
+SYS5 Mass2Shift 0.1
+SYS6 Mass2Shift -0.1

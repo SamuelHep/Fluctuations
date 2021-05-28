@@ -1,3 +1,8 @@
+/*
+A collection of functions that used in the analysis (not well organized)
+Descriptions of each function are included
+*/
+
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -17,6 +22,9 @@
 using namespace std;
 
 
+/* The dEdx nSigmaProton gaussian distributions are not centered around 0. 
+This simple function shifts the nSigmaProton value for a given total momentum bin.
+Fits were performed by Yu Zhang */
 float getProtonDedxMeanShift(float p)
 {
   if ( p<0.2 || p>=2.6 ) return 0;
@@ -31,11 +39,14 @@ float getProtonDedxMeanShift(float p)
 
 }
   
-
+/* Function takes the primary analysis class (CumulantProfileContainer) for each bootstrap of the analysis
+   and calculates the statistical error for each graph in the CumulantProfileContainer. The actual calculation is performed in BootstrapGraph(...)*/
 int ComputeBootstrapErrors(CumulantProfileContainer * primaryCpc, vector<CumulantProfileContainer*> cpc_vec)
 {
 
-  for ( auto & key_graph_primary : primaryCpc->GetGraphMap() )
+  //Loop through each cumulant graph (C1, C2, ... , C2/C1 , ... , K6/K1)
+  //Initialize a corresponding vector of bootstrap graphs 
+  for ( auto & key_graph_primary : primaryCpc->GetGraphMap() ) 
     {
       TString key = key_graph_primary.first;
       TGraphErrors * primary_graph = key_graph_primary.second;
@@ -46,15 +57,15 @@ int ComputeBootstrapErrors(CumulantProfileContainer * primaryCpc, vector<Cumulan
 	  bootstrap_graphs.push_back( (TGraphErrors*) bootstrap_container->GetGraph( key ) );
 	}
 
+      //For each cumulant graph, calculate the errors
       BootstrapGraph( primary_graph , bootstrap_graphs );
-
     }
   
   return 0;
 
 }
 
-
+/* Takes a graph and a vector of bootstrapped graphs and calculates the statistical error */
 int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec)
 {
 
@@ -62,19 +73,14 @@ int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec)
     {
       double x = gr->GetX()[i];
       double y = gr->GetY()[i];
-
-      //      cout << "original (x,y) = " << x << ", " << y << endl;
-
       std::vector<double> msArray;
       
       for (auto & gr_bs : gr_vec)
 	{
 
 	  if (i >= gr->GetN()) continue;	 	  
-
 	  double x_bs = gr_bs->GetX()[i];
 	  double y_bs = gr_bs->GetY()[i];
-	  //	  cout << "    bs (x , y) = " << x_bs << ", " << y_bs << endl;      
 	  
 	  if ( fabs(x - x_bs) > 0.001 ) continue;
 	  msArray.push_back( pow((y - y_bs),2) );
@@ -84,16 +90,13 @@ int BootstrapGraph(TGraphErrors * gr, std::vector<TGraphErrors*> gr_vec)
       int n = gr_vec.size();
       if ( n < 2 ) n = 2;
       double rms = sqrt( sum/( n-1 ));
-
-      gr->SetPointError(i,0,rms);
-      
+      gr->SetPointError(i,0,rms);      
     }
 
   return 0;
-    
 }
 
-
+/* Take a list of files and generate a TChain pointer. All files must have the same treename */
 TChain * GetTChainFromList(TString listname, TString treename)
 {
 
@@ -137,10 +140,14 @@ TChain * GetTChainFromList(TString listname, TString treename)
   return chain;  
 }
 
+/***********************************************************************************************/
+/* The next few functions are used to generate parameter.list files. You do not need to use them to generate a filelist.
+Useful for generating the systematic variations of an analysis. Pass a parameter_test.list file (nominal_file_name), a list of systematic cuts (list_of_sys_file_name)
+and the name that will be replaced by each systematic cut (nominal_qualifier). Use the input_parameters/sys.list as reference list_of_sys_file_name. 
+List of implemented sys cuts is in src/InputParameterList.cxx */
 
 void ParseSysFile(TString nominal_file_name,TString list_of_sys_file_name, TString nominal_qualifier)
 {
-
   ifstream list_of_sys( list_of_sys_file_name );
   if ( !list_of_sys )
     {
@@ -157,12 +164,10 @@ void ParseSysFile(TString nominal_file_name,TString list_of_sys_file_name, TStri
       if ( !(iss >> syslabel >> var >> value) ) {break;}
       GenerateSysFile( nominal_file_name , nominal_qualifier, syslabel, var, value );
     }
-
 }
 
 void GenerateSysFile(TString nominal_file_name, TString nominal_qualifier, TString sys_label, TString var, double value)
 {
-
   //First get the nominal input parameter list
   InputParameterList input_par = ReadInputFile( nominal_file_name );
   
@@ -174,14 +179,12 @@ void GenerateSysFile(TString nominal_file_name, TString nominal_qualifier, TStri
     }
       
   TString sys_name = nominal_file_name.ReplaceAll( nominal_qualifier , sys_label );
-
   WriteInputFile( input_par , sys_name );
  
 }
 
 void WriteInputFile(InputParameterList parList,TString outfilename)
 {
-
   ofstream outFile(outfilename);
   for (auto &param : parList.GetParameterMap())
     {
@@ -189,17 +192,17 @@ void WriteInputFile(InputParameterList parList,TString outfilename)
     }
   outFile.close();
 }
+/***********************************************************************************************/
 
+/* Function to read input parameter files and return the class InputParameterList */
 InputParameterList ReadInputFile(TString inputfile)
 {
-
   ifstream inFile(inputfile);
   if (!inFile)
     {
       cerr << "Unable to open input parameter file";
       exit(1);
     }
-
   InputParameterList parList;
   
   string line;
@@ -211,11 +214,16 @@ InputParameterList ReadInputFile(TString inputfile)
       if(!(iss >> label >> val)){ break; } //error
       parList.Read(label,val);
     }
-
   return parList;
 }
 
+/***********************************************************************************************
+The next few functions: RunPileUpCorr, RunNoCorr and RunNoCorrNoCBWC are used to convert
+bivariate moments into cumulants.  
 
+For the final analysis, we use RunPileUpCorr, which applies the pileup correction, applies cbwc and 
+calculates the statistical error. Requires correction files (histfillename) for the pileup correction.
+***********************************************************************************************/
 void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename, Bool_t urqmdHists,int shift_cut)
 {
   
@@ -223,18 +231,9 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
   cout << "OUTFILE =" << outfilename << endl;
   cout << "HISTFILE=" << histfilename << endl;
 
-  /*  std::vector<double> binLabels = { 10, 21, 32, 50, 74, 105, 149, 251};
-  std::vector<int> binEdges     = {2, 5, 8, 13, 24, 29, 41, 50, 80};
-  
-  std::vector<double> binLabels = {39, 51, 64, 81, 100, 121, 146,  176, 210  , 248, 293, 345};
-  std::vector<int> binEdges     = {2, 5, 8, 11,  13, 16, 20, 24, 29, 34, 41, 50, 90};
-  */
   std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
   //CURRENT CENTRALITY DEFINITION
   std::vector<int> binEdges     = { 4 + shift_cut,    6 + shift_cut,    10 + shift_cut,    16 + shift_cut,   25 + shift_cut,  38 + shift_cut, 48 + shift_cut, 79 + shift_cut};
-
-  //  std::vector<int> binEdges     = { 5,    7,    11,    18,   26,  40, 49,   90}; //Up one
-  //  std::vector<int> binEdges     = { 3,    5,    9,    16,   24,  38,  47,   90}; //Down one
 
   std::vector<CumulantProfileContainer*> cpc_vec;
   std::vector<CumulantProfileContainer*> cpc_uncor_vec;
@@ -295,14 +294,12 @@ void RunPileUpCorr(TString infilename, TString outfilename, TString histfilename
 
 }
 
-
+/* Similar to RunNoCorr put doesn't apply pileup correction */ 
 void RunNoCorr(TString infilename, TString outfilename) 
 {
-  
   std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
   //CURRENT CENTRALITY DEFINITION
   std::vector<int> binEdges     = { 4 ,    6 ,    10 ,    16 ,   25 ,  38 , 48 , 79 };
-
   std::vector<CumulantProfileContainer*> cpc_uncor_vec;
 
   cout << "Run over primary cumulant profiles" << endl;
@@ -323,7 +320,6 @@ void RunNoCorr(TString infilename, TString outfilename)
       cpc_uncor->MomentsToCumulants();
       cpc_uncor->ReBinAllGraphs(binEdges,binLabels);  
       cpc_uncor_vec.push_back(cpc_uncor);
-
     }
 
   ComputeBootstrapErrors(cpc_uncor_prime,cpc_uncor_vec);
@@ -340,9 +336,9 @@ void RunNoCorr(TString infilename, TString outfilename)
 
 }
 
+/* Similar to RunNoCorr put doesn't apply pileup correction or cbwc */ 
 void RunNoCorrNoCBWC(TString infilename, TString outfilename) 
 {
-  
   //  std::vector<double> binLabels = { 47, 70, 107, 157, 219, 282,  326};
   std::vector<double> binLabels = { 326, 282, 219, 157, 107, 70,  47};
   //CURRENT CENTRALITY DEFINITION
@@ -380,12 +376,88 @@ void RunNoCorrNoCBWC(TString infilename, TString outfilename)
     {
       key_gr.second->Write();
     }
-
   delete cpc_uncor_prime;
-
 }
 
 
+/* Simple functions used to return centrality bins */
+int CentBin(int mult)
+{
+
+  if (mult > 200) return -1;
+  if (mult > 136) return 0;
+  if (mult > 114) return 1;
+  if (mult > 94) return 2;
+  if (mult > 78) return 3;
+  if (mult > 64) return 4;
+  if (mult > 52) return 5;
+  if (mult > 44) return 6;
+  if (mult > 34) return 7;
+  if (mult > 28) return 8;
+  if (mult > 22) return 9;
+  if (mult > 16) return 10;
+  if (mult > 12) return 11;
+  if (mult > 10) return 12;
+  if (mult > 6) return 13;
+  else return 14;
+}
+
+int CentBinTofMatch(int mult)
+{
+
+  if (mult > 80) return -1;
+  if (mult > 48) return 0;
+  if (mult > 40) return 1;
+  if (mult > 34) return 2;
+  if (mult > 28) return 3;
+  if (mult > 22) return 4;
+  if (mult > 18) return 5;
+  if (mult > 14) return 6;
+  if (mult > 12) return 7;
+  if (mult > 10) return 8;
+  if (mult > 8) return 9;
+  if (mult > 6) return 10;
+  if (mult > 4) return 11;
+  else return 12;
+}
+
+int CentBin3(int mult)
+{
+  if (mult > 79) return -1;
+  if (mult > 48) return 0;
+  if (mult > 38) return 1;
+  if (mult > 25) return 2;
+  if (mult > 16) return 3;
+  if (mult > 10) return 4;
+  if (mult > 6) return 5;
+  if (mult > 4) return 6;
+  if (mult >= 0) return 7;
+  else return -1;
+}
+
+
+int GetRunIndex( std::vector<int> &runvec, int runNum)
+{
+
+  auto it = std::find(runvec.begin(),runvec.end(),runNum);
+  if (it != runvec.end())
+    {
+      return std::distance(runvec.begin(),it);
+    }
+  else
+    {
+      runvec.push_back(runNum);
+      return std::distance(runvec.begin(),runvec.end()) - 1;
+    }
+}
+
+
+/*****************************************************************
+OLD CODE NOT USED
+
+Below here are a few pile up rejection functions
+No longer used
+*****************************************************************/
 pair<bool,bool> PileUpBadEvent(int fxt, double nmip,double pipdu)
 {
 
@@ -396,9 +468,6 @@ pair<bool,bool> PileUpBadEvent(int fxt, double nmip,double pipdu)
   if (centBin < 0 ) return make_pair(false,false);
   if (centBin > 9 ) centBin = 9;
   
-  //  int epdCuts[11] = {73,62,59,55,51,46,41,35,30,25,16};
-  //    int epdCuts[11] = {73,62,59,55,51,46,41,35,30,25,16};
-  //  int epdCuts[8]    = {71,73,74,75,75,75,75,82};
   double epdCuts[10] = {97.75, 89.25, 87.75, 85.75, 83.25, 80.25, 77.25, 74.25, 71.75, 68.75};
   double tofCuts[10] = {29.4098, 24.3502, 18.8585, 14.0175, 11.1732, 8.18495, 6.82341, 5.88937, 4.19889,0};
   if (nmip > epdCuts[centBin]) GoodEpd = false;
@@ -452,128 +521,5 @@ pair<bool,bool> PileUpBadEventVariable(int fxt,double nmip,double pipdu,int inde
   if ( fxt > pileup_cut ) return make_pair(false,false);
   return make_pair(true,true);
 
-  /*
-
-  bool GoodEpd =true;
-  bool GoodTof =false;
-
-  int centBin = CentBin(fxt);
-  if (centBin < 0 && index != 9) return make_pair(false,false);
-  
-  if ( index >= 8  ) return make_pair(true,true); //if index is 0 or greater than 8, just say good event
-
-  double epdCuts1[16]       = {41, 42, 43, 45, 49, 52, 56, 61, 65, 68, 71, 74, 76, 77, 80, 80};
-  double epdCuts2[16]       = {51, 51, 52, 54, 58, 62, 66, 69, 73, 76, 80, 83, 85, 86, 90, 90};
-  double epdCuts3[16]       = {74, 75, 76, 77, 80, 83, 86, 89, 92, 95, 98, 101, 104, 106, 110, 110};
-
-  if (index == 0 || index == 2 || index == 3 ) //For first 3, use 80 cut
-    {
-      if ( nmip > epdCuts2[14 - centBin] ) GoodEpd = false;
-    }
-  if ( index == 1 ) //For 4, use 90 cut
-    {
-      if ( nmip > epdCuts1[14 - centBin] ) GoodEpd = false;
-    }
-  if ( index == 4 ) //For 5, use 50 cut
-    {
-      if ( nmip > epdCuts3[14 - centBin] ) GoodEpd = false;
-    }
-
-  double p0[3] = {-2.247,-3.03665,-3.82582};
-  double p1[3] = {0.08050,0.02068,-0.03919};
-  double p2[3] = {0.001,0.00117347,0.001344};
-
-  int tIndex = 0;
-
-  if ( index == 1 || index == 2 || index == 4 || index == 6 ) tIndex = 1;
-  if ( index == 0 || index == 5 ) tIndex = 0;
-  if ( index == 3 || index == 7 ) tIndex = 2;
-
-  double cut = p0[tIndex] + p1[tIndex]*(fxt) + p2[tIndex]*(fxt*fxt);
-
-  if (pipdu > cut && pipdu > 0) GoodTof = true;
-
-  return make_pair(GoodEpd,GoodTof);  
-
-  */
-
 }
 
-
-int CentBin(int mult)
-{
-
-  if (mult > 200) return -1;
-  if (mult > 136) return 0;
-  if (mult > 114) return 1;
-  if (mult > 94) return 2;
-  if (mult > 78) return 3;
-  if (mult > 64) return 4;
-  if (mult > 52) return 5;
-  if (mult > 44) return 6;
-  if (mult > 34) return 7;
-  if (mult > 28) return 8;
-  if (mult > 22) return 9;
-  if (mult > 16) return 10;
-  if (mult > 12) return 11;
-  if (mult > 10) return 12;
-  if (mult > 6) return 13;
-  else return 14;
-}
-
-int CentBinTofMatch(int mult)
-{
-
-  if (mult > 80) return -1;
-  if (mult > 48) return 0;
-  if (mult > 40) return 1;
-  if (mult > 34) return 2;
-  if (mult > 28) return 3;
-  if (mult > 22) return 4;
-  if (mult > 18) return 5;
-  if (mult > 14) return 6;
-  if (mult > 12) return 7;
-  if (mult > 10) return 8;
-  if (mult > 8) return 9;
-  if (mult > 6) return 10;
-  if (mult > 4) return 11;
-  else return 12;
-}
-
-
-int CentBin3(int mult)
-{
-  if (mult > 79) return -1;
-  if (mult > 48) return 0;
-  if (mult > 38) return 1;
-  if (mult > 25) return 2;
-  if (mult > 16) return 3;
-  if (mult > 10) return 4;
-  if (mult > 6) return 5;
-  if (mult > 4) return 6;
-  if (mult >= 0) return 7;
-  //  if (mult > 14) return 7;
-  //  if (mult > 11) return 8;
-  //  if (mult > 9) return 9;
-  //  if (mult > 7) return 10;
-  //  if (mult > 6) return 11;
-  //  if (mult > 4) return 12;
-  //  if (mult > 3) return 13;
-  else return -1;
-}
-
-
-int GetRunIndex( std::vector<int> &runvec, int runNum)
-{
-
-  auto it = std::find(runvec.begin(),runvec.end(),runNum);
-  if (it != runvec.end())
-    {
-      return std::distance(runvec.begin(),it);
-    }
-  else
-    {
-      runvec.push_back(runNum);
-      return std::distance(runvec.begin(),runvec.end()) - 1;
-    }
-}
