@@ -27,7 +27,7 @@ goodRunList=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
 You can leave the goodRunList as the current path or obtain the good run list from https://drupal.star.bnl.gov/STAR/system/files/good_3GeV.txt
 
 Then, it you just run ./run.sh and wait for the jobs to finish
-`
+
 > ./run.sh
-`
+
 
