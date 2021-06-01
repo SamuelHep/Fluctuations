@@ -8,7 +8,7 @@ Creates a reduced file format for the proton analysis.
 Proton Fluctuations analysis for FXT 3 GeV
 
 ## BEFORE RUNNING ANYTHING
-Edit the .... file. 
+Edit the `MakeConfig.sh` file. 
 An output directory must be specified.
 The external files may need to be changed. If so, the location of the files are stated in the script.
 
