@@ -1,6 +1,6 @@
 
 
-void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed)
+void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed, TString tpc_efficiency_file, TString tof_efficiency_file)
 {
 
   gSystem->Load("momentCode.so");
@@ -32,7 +32,8 @@ void RunEvents(TString filelist,TString parameterFile, TString InputFile_forSeed
   cout << "Filename = " << filename << endl;
 
   //Make Proton Efficiency Object 
-  ProtonEfficiency * eff =  new ProtonEfficiency("tpc_efficiency.root","tof_efficiency_fineBinning.root",pl);
+  ProtonEfficiency * eff =  new ProtonEfficiency(tpc_efficiency_file, tof_efficiency_file, pl);
+  //  ProtonEfficiency * eff =  new ProtonEfficiency("tpc_efficiency.root","tof_efficiency_fineBinning.root",pl);
   //  ProtonEfficiency * eff =  new ProtonEfficiency();
   //  eff->SetConstantEfficiency(1.0);
   

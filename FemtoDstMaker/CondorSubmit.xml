@@ -9,14 +9,14 @@
   </Location></Generator>
 
 <!--  <input URL="catalog:star.bnl.gov?filetype=daq_reco_picoDst,trgsetupname=production_3p85GeV_fixedTarget_2018,runnumber[]19153029-19155022,production=P19ie,sname2~st_physics,storage!=hpss -distinct" nFiles="9000"/>  -->
- <input URL="filelist:/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/3GeV_newProd_Fluct_GoodList.list"/> 
+<!-- <input URL="filelist:/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/3GeV_newProd_Fluct_GoodList.list"/> -->
+  <input URL="filelist:&goodRunList;"/> 
 
   <SandBox installer="ZIP">
       <Package name="sched_fDsts"> 
       <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StFemtoMacro.C</File>
       <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StRoot/</File>
-      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/checkEmbedding_pip.root</File>
-      <File>file:&goodRunList;</File>
+      <File>file:&goodRunTxt;</File>
     </Package>
   </SandBox>
 
@@ -25,7 +25,7 @@
     starver new
     cons
 
-    set runfile = `basename &goodRunList;`
+    set runfile = `basename &goodRunTxt;`
 
     <!-- Run the Root Macro with the options above -->
     set nEvents = 99999999    <!-- Number of events to run over. -->
