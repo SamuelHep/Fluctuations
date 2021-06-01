@@ -35,7 +35,7 @@ Next, run the code that adds the profiles to a single root file, runs the correc
 
 > ./run_corr_and_plot.sh 
 
-A plot with the rapidity scan and pT scan is generated in `FemtoProtonAnaylsis/imgs/`
+A plot with the rapidity scan and pT scan is generated in `FemtoProtonAnaylsis/img/`
 
 For rootfiles with the results, look at cumulant*.root files in `FemtoProtonAnaylsis/rootfiles/cumulants/`
 

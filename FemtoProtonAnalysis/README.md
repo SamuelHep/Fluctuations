@@ -25,7 +25,7 @@ Then run the script in ` scripts ` that adds the histograms, applies the pileup 
 
 ` ./run_corr_and_plot.sh `
 
-an image of the plot cumulants will show up in `imgs`. 
+an image of the plot cumulants will show up in `img`. 
 
 
 
