@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Runs CondorSubmit.xml and converts picoDsts from catalog query to femtoDsts
-#If running from config file, just run ./RunCondorSubmit. 
+#If running from config file, just run ./RunCondorSubmit.sh. 
 
 #If specifying the directories, fill the parameters as follows: 
 
@@ -9,7 +9,7 @@ outDir="fDsts output directory ... $1"
 logDir="fDsts log directory ... $2"
 schedDir="fDsts schedular directory ... $3"
 goodRunList="fDsts good run file list ... $4"
-goodRunList="fDsts good run numbers ... $5"
+goodRunTxt="fDsts good run numbers ... $5"
 
 if [ "$#" -ne 0 ] && [ "$#" -ne 5 ]; then
     echo "Bad number of arguments..." 

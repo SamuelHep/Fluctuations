@@ -1,6 +1,7 @@
-
 # FemtoDstMaker
 ## generates a reduced file format for the proton moments analysis
+
+### If running from config file "femto.config", just run `./RunCondorSubmit.sh`. This will set up the enviroment, compile, and submit the jobs ###
 
 The code includes a few makers:
 1. StFemtoDstMaker     
@@ -27,9 +28,10 @@ Second, edit the run.sh and change the file paths to convient out, log and sched
 > outDir=/star/data01/pwg/your_directory/fDsts/  
 > logDir=/star/data01/pwg/your_directory/fDsts_log/
 > schedDir=/star/data01/pwg/your_directory/fDsts_sched/
-> goodRunList=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
+> goodRunList=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/good_3GeV.list
+> goodRunTxt=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
 
-You can leave the goodRunList as the current path or obtain the good run list from https://drupal.star.bnl.gov/STAR/system/files/good_3GeV.txt
+You can leave the goodRunList as the current path or obtain the good run list from https://drupal.star.bnl.gov/STAR/system/files/good_3GeV.list
 
 Then, it you just run ./run.sh and wait for the jobs to finish
 
