@@ -18,6 +18,10 @@ cuts is printed to the terminal at the end.
 
 
 ##############################################################
+To compile:
+
+      ~$  make
+
 The scripts are setup to run with the moments code:
 
       ~$  ./runGlauberSimulation.sh
