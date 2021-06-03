@@ -31,9 +31,9 @@ if [ "$#" -eq 0 ]; then
 	mkdir $ProfileDir
     fi
 
-    outDir=$ProfileDir/out
-    logDir=$ProfileDir/log
-    schedDir=$ProfileDir/sched
+    outDir=$ProfileDir/out/
+    logDir=$ProfileDir/log/
+    schedDir=$ProfileDir/sched/
     fDstDir=$FDST_OUT 
     tpc_eff_file=$TPC_EFF_FILE
     tof_eff_file=$TOF_EFF_FILE
