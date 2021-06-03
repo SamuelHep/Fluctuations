@@ -14,7 +14,14 @@ The external files may need to be changed. If so, the location of the files are 
 
 ## How to run.... ##
 
-Edit the paths in `MakeConfig.sh`. Change the output_parent_directory to somewhere with space ~200 Gb.
+First, run in your terminal:
+
+> setup 64bits 
+
+You must do this every session to run anything in FemtoProtonAnalysis.
+If you compile and do not do this, it will fail and you need to go into `FemtoProtonAnaylsis` and `make clean`
+
+Next, edit the paths in `MakeConfig.sh`. Change the output_parent_directory to somewhere with space ~200 Gb.
 You can leave the external files as is.
 
 Run `./MakeConfig.sh` to format the *femto.config* file.
