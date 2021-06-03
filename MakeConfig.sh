@@ -69,6 +69,8 @@ fi
 top_dir=`pwd`
 maker_dir=${top_dir}/FemtoDstMaker/
 analysis_dir=${top_dir}/FemtoProtonAnalysis/
+embed_dir=${output_parent_directory}/embed/
+tofmatch_dir=${output_parent_directory}/tofmatch/
 
 # Generate config file
 config_file=femto.config
@@ -83,6 +85,8 @@ echo "TOP_DIR="$top_dir >> $config_file
 echo "MAKER_DIR="$maker_dir >> $config_file
 echo "ANA_DIR="$analysis_dir >> $config_file
 echo "PARENT_DIR="$output_parent_directory >> $config_file
+echo "EMBED_DIR="$embed_dir >> $config_file
+echo "TOFMATCH_DIR="$tofmatch_dir >> $config_file
 echo "TPC_EFF_FILE="$tpc_efficiency_file >> $config_file
 echo "TOF_EFF_FILE="$tof_efficiency_file >> $config_file
 echo "PU_NORM_FILE="$pileup_correction_file >> $config_file

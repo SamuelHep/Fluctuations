@@ -148,6 +148,9 @@ int SimplePlots(
 
 }
 
+
+
+
 int QAplots(
 	    TChain * tc,
 	    long int nentries,
@@ -178,7 +181,7 @@ int QAplots(
   */
 
   
-  TH1D * fxtmult3_dca3 = new TH1D("fxtmult3_dca3","",400,-0.5,399.5);
+  TH1D * fxtmult3_dca3 = new TH1D("fxtmult3","",400,-0.5,399.5);
   TH1D * fxtmult3_dca2p5 = new TH1D("fxtmult3_dca2p5","",400,-0.5,399.5);
   TH1D * fxtmult3_dca2 = new TH1D("fxtmult3_dca2","",400,-0.5,399.5);
   TH1D * fxtmult3_dca1 = new TH1D("fxtmult3_dca1","",400,-0.5,399.5);
@@ -367,6 +370,55 @@ int QAplots(
   //  for ( auto &h : th2f ) { h.second->Write(); } 
   //  for ( auto &h : th3f ) { h.second->Write(); } 
 
+
+}
+
+
+int MakeMultHists(
+		  TChain * tc,
+		  long int nentries,
+		  InputParameterList & pl,
+		  TString outfilename
+		  )
+{
+
+
+  TFile * outfile = new TFile(outfilename,"recreate");
+
+  TH1D * fxtmult3 = new TH1D("fxtmult3","",400,-0.5,399.5);
+  TH1D * fxtmult = new TH1D("fxtmult","",400,-0.5,399.5);
+
+  StFemtoEvent * event = new StFemtoEvent();  
+  tc->SetBranchAddress("StFemtoEvent",&event);
+  
+  //Proton Mass
+
+  for (int iEntry=0;iEntry<nentries;iEntry++)
+    {
+      
+      tc->GetEntry(iEntry);
+      //Get Event Variables
+      double vz   = event->GetVz();
+      double vr   = event->GetVxy();
+      double fxt3 = event->GetFxtMult3();
+      double fxt  = event->GetFxtMult();
+      double nmip = event->GetNMip();
+      double pipdu = event->GetPiPDu();
+      double fxttof = event->GetFxtMultTofMatch();      
+
+      if ( vz > pl.VzMax() ) continue;
+      if ( vz < pl.VzMin() ) continue;
+      if ( vr > pl.VrMax() ) continue;
+
+      fxtmult_dca3->Fill(fxt);
+      fxtmult3_dca3->Fill(fxt3);
+      
+    }
+
+  outfile->cd();
+
+  fxtmult->Write();
+  fxtmult3->Write();
 
 }
 
