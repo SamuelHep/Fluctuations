@@ -29,5 +29,11 @@ int QAplots(
 	    TString outfilename
 	    );
 
+int MakeMultHists(
+		  TChain * tc,
+		  long int nentries,
+		  InputParameterList & pl,
+		  TString outfilename
+		  )
 
 #endif
