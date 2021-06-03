@@ -34,6 +34,6 @@ int MakeMultHists(
 		  long int nentries,
 		  InputParameterList & pl,
 		  TString outfilename
-		  )
+		  );
 
 #endif

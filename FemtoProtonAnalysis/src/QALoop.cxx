@@ -410,8 +410,8 @@ int MakeMultHists(
       if ( vz < pl.VzMin() ) continue;
       if ( vr > pl.VrMax() ) continue;
 
-      fxtmult_dca3->Fill(fxt);
-      fxtmult3_dca3->Fill(fxt3);
+      fxtmult->Fill(fxt);
+      fxtmult3->Fill(fxt3);
       
     }
 
