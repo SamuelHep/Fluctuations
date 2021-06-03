@@ -57,8 +57,13 @@ if [ "$#" -eq 7 ]; then
 
 fi
 
+filelist=femto_3GeV.list
+#Check to make sure that the inputFileList exists 
+if [ ! -e $filelist ]; then
+    readlink -f ${fDstDir}/*.root > femto_3GeV.list
 
-readlink -f ${fDstDir}/*.root > femto_3GeV.list
+fi
+
 filelist=`readlink -f femto_3GeV.list`
 echo $filelist
 

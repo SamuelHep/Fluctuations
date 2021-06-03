@@ -1,5 +1,7 @@
 #!/bin/bash
 
+setup 64bits
+
 ./hadd_profiles.sh
 
 config_file=../../femto.config
