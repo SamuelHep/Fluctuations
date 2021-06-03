@@ -41,7 +41,7 @@ echo " "
 sleep 4s
 
 #Check to make sure there are the right number of arguments
-if [ "$#" -ne 5 ]; then
+if [ "$#" -ne 7 ]; then
     echo "ERROR: Incorrect number of arguments! This script needs five: outputDir logDir schedDir filelist packageName"
     exit 1
 fi
