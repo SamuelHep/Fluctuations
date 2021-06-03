@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<job maxFilesPerProcess="10" fileListSyntax="paths" copyInputLocally="true">
+  <stdout URL="file:&logDir;/procEmbedding_$JOBINDEX.out" />
+  <stderr URL="file:&logDir;/procEmbedding_$JOBINDEX.err" /> 
+
+  <Generator>                                                                                                                                                                         
+    <Location> &schedDir;</Location>
+ </Generator>
+
+
+<command> 
+        starver SL19e
+	cons
+        root4star -q -b doMuDst.C\(\"$FILELIST\",\"muEmbed_${JOBID}.root\",\"pro\",1000000000\) 
+</command> 
+
+<SandBox installer="ZIP">
+        <Package name="sched_runMuEmbedding">
+              	<File>file:./doMuDst.C</File>
+	 	<File>file:./StRoot</File>
+        </Package>
+</SandBox>
+
+
+<input URL="filelist:&workDir;/filelist_3GeV_pro.list" />
+<output fromScratch="*.root" toURL="file:&outDir;" />
+
+</job>
+
