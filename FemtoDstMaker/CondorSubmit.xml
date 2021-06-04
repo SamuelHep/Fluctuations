@@ -14,8 +14,8 @@
 
   <SandBox installer="ZIP">
       <Package name="sched_fDsts"> 
-      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StFemtoMacro.C</File>
-      <File>file:/star/u/sheppel/femtoRepo/FemtoDstMaker/StRoot/</File>
+      <File>file:StFemtoMacro.C</File>
+      <File>file:StRoot/</File>
       <File>file:&goodRunTxt;</File>
     </Package>
   </SandBox>

@@ -71,7 +71,7 @@ Int_t StFemtoDstMaker::Init()
 Int_t StFemtoDstMaker::Finish() 
 {
   mOutfile->cd();
-  fDstTree->Write();
+  //  fDstTree->Write();
   return kStOK;
 }
 
@@ -138,7 +138,7 @@ Int_t StFemtoDstMaker::Make()
   Float_t epdNMip = mEpdPileUpRejection->EpdNMip(mPicoDst);
 
   std::pair<int,int> FxtMult_PiPDu_pair  = mEpdPileUpRejection->FxtMultAndPiPDuCount(mPicoDst);
-  Int_t gMult      = FxtMult_PiPDu_pair.first;
+  //  Int_t gMult      = FxtMult_PiPDu_pair.first;
   Int_t countpipdu = FxtMult_PiPDu_pair.second;
 
   mFemtoEvent->Clear();
@@ -190,7 +190,7 @@ Int_t StFemtoDstMaker::Make()
       //Only use tracks below -3 sigma of proton band
       refmult++;
 
-      Float_t pt = mPicoTrack->pMom().Perp();
+      //      Float_t pt = mPicoTrack->pMom().Perp();
       Float_t q = mPicoTrack->charge();
       Float_t px = mPicoTrack->pMom().X();
       Float_t py = mPicoTrack->pMom().Y();
@@ -198,8 +198,8 @@ Int_t StFemtoDstMaker::Make()
       Float_t nSigProton = mPicoTrack->nSigmaProton();
       Float_t nSigPion = mPicoTrack->nSigmaPion();
 
-      Float_t protonRapidity = fabs( ParticleRapidity( pt, pz, p_m ) );
-      Float_t pionRapidity   = fabs( ParticleRapidity( pt, pz, pi_m ) );
+      //      Float_t protonRapidity = fabs( ParticleRapidity( pt, pz, p_m ) );
+      //      Float_t pionRapidity   = fabs( ParticleRapidity( pt, pz, pi_m ) );
       Float_t tofProtonMass =-999;
       Float_t eta = 0.5 * TMath::Log( (mPicoTrack->pMom().Mag() + mPicoTrack->pMom().Z()) / (mPicoTrack->pMom().Mag() - mPicoTrack->pMom().Z()) );
 
@@ -210,7 +210,7 @@ Int_t StFemtoDstMaker::Make()
 	  double mom = sqrt( px*px + py*py + pz*pz );
 	  if ( mom > 0.2 && mom < 1.0 && eta < -0.01 && eta > -2.0)
 	    {
-	      double eff = GetPionEfficiency( pionRapidity, sqrt(px*px + py*py) );
+	      double eff = 1.0; //GetPionEfficiency( pionRapidity, sqrt(px*px + py*py) );
 	      nCharge += ( eff > 0 ) ? 1.0/eff : 0; 
 	    }
 	} 
