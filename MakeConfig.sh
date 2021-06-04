@@ -13,13 +13,10 @@ tof_efficiency_file=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/eff/
 pileup_correction_file=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/pileupCor/test_data_best.root
 pileup_correction_file_syslow=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/pileupCor/test_data_best_minus.root
 pileup_correction_file_syshigh=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/pileupCor/test_data_best_plus.root
-good_run_file_list=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/3GeV_newProd_Fluct_GoodList.list
-good_runs_txt=/star/u/sheppel/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
 
 # If you can't find the efficiency files or the pileup_correction_files, they can be located here:
 # Efficiency files -> https://drupal.star.bnl.gov/STAR/system/files/EfficiencyCorr.zip
 # PileUp Correction files -> https://drupal.star.bnl.gov/STAR/system/files/pileupCorr.zip
-# GoodRun files -> https://drupal.star.bnl.gov/STAR/system/files/good_run_lists.zip
 ####################################################################################
 
 nocompile=false 
@@ -37,9 +34,7 @@ ext_files=($tpc_efficiency_file
 $tof_efficiency_file
 $pileup_correction_file
 $pileup_correction_file_syslow
-$pileup_correction_file_syshigh
-$good_run_file_list
-$good_runs_txt )
+$pileup_correction_file_syshigh )
 all_set=true
 
 for file in ${ext_files[@]}; do
@@ -72,6 +67,9 @@ analysis_dir=${top_dir}/FemtoProtonAnalysis/
 embed_dir=${output_parent_directory}/embed/
 tofmatch_dir=${output_parent_directory}/tofmatch/
 
+good_run_file_list=$maker_dir/filelist/3GeV_newProd_Fluct_GoodList.list
+good_runs_txt=$maker_dir/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
+
 # Generate config file
 config_file=femto.config
 
@@ -81,17 +79,26 @@ fi
 
 touch $config_file
 echo "# Generated from MakeConfig.sh" >> $config_file
+echo "" >> $config_file
+echo "# Directories" >> $config_file
 echo "TOP_DIR="$top_dir >> $config_file
 echo "MAKER_DIR="$maker_dir >> $config_file
 echo "ANA_DIR="$analysis_dir >> $config_file
 echo "PARENT_DIR="$output_parent_directory >> $config_file
+
+echo "" >> $config_file
+echo "# Efficiency Files" >> $config_file
 echo "EMBED_DIR="$embed_dir >> $config_file
 echo "TOFMATCH_DIR="$tofmatch_dir >> $config_file
 echo "TPC_EFF_FILE="$tpc_efficiency_file >> $config_file
 echo "TOF_EFF_FILE="$tof_efficiency_file >> $config_file
+echo "" >> $config_file
+echo "# Pile Up Files" >> $config_file
 echo "PU_NORM_FILE="$pileup_correction_file >> $config_file
 echo "PU_HIGH_FILE="$pileup_correction_file_syshigh >> $config_file
 echo "PU_LOW_FILE="$pileup_correction_file_syslow >> $config_file
+echo "" >> $config_file
+echo "# Run Info" >> $config_file
 echo "GOOD_RUNS_LIST="$good_run_file_list >> $config_file
 echo "GOOD_RUNS_TXT="$good_runs_txt >> $config_file
 
