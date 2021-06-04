@@ -31,9 +31,9 @@ if [ "$#" -eq 0 ]; then
 	mkdir $ProfileDir
     fi
 
-    outDir=$ProfileDir/out
-    logDir=$ProfileDir/log
-    schedDir=$ProfileDir/sched
+    outDir=$ProfileDir/out/
+    logDir=$ProfileDir/log/
+    schedDir=$ProfileDir/sched/
     fDstDir=$FDST_OUT 
     tpc_eff_file=$TPC_EFF_FILE
     tof_eff_file=$TOF_EFF_FILE
@@ -69,7 +69,7 @@ echo $filelist
 
 configsArray=("n0p2_0" "n0p3_0" "n0p4_0" "n0p5_0" "n0p5_0_pt1" "n0p5_0_pt2" "n0p5_0_pt3" "n0p5_0_pt4")
 
-for configs in ${configsArray}; do
+for configs in ${configsArray[@]}; do
     ./sys_submitter.sh $outDir $logDir $schedDir $filelist $tpc_eff_file $tof_eff_file ${configs} 
     wait
 done
