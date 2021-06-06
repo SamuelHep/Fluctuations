@@ -235,7 +235,7 @@ void DrawCumulant()
   frame2->GetXaxis()->SetTitle("p^{max}_{T} (GeV/c)");
   frame2->GetXaxis()->SetTitleOffset(0.95);
   frame2->GetXaxis()->SetTitleSize(0.08);
-  //  frame2->GetXaxis()->SetLabelSize(0.07);
+  frame2->GetYaxis()->SetLabelSize(0.0);
   frame2->GetXaxis()->SetNdivisions(506);
   frame2->GetYaxis()->SetNdivisions(504);
   frame2->GetXaxis()->SetLabelFont(43);
@@ -264,9 +264,9 @@ void DrawCumulant()
   //  frame3->GetYaxis()->SetTitleSize(0.13);
   //  frame3->GetYaxis()->SetLabelSize(0.09);
   frame3->GetYaxis()->CenterTitle();
-  frame3->GetXaxis()->SetTitle("y_{min}");
+  //  frame3->GetXaxis()->SetTitle("y_{min}");
   frame3->GetXaxis()->SetTitleSize(0.05);
-  frame3->GetXaxis()->SetLabelSize(0.07);
+  frame3->GetXaxis()->SetLabelSize(0.0);
   frame3->GetXaxis()->SetNdivisions(506);
   frame3->GetYaxis()->SetNdivisions(504);
   frame3->GetYaxis()->SetLabelOffset(0.012);
@@ -282,9 +282,10 @@ void DrawCumulant()
   gPad->SetTicks(1,1);
 
   TH1F * frame4 = gPad->DrawFrame(0.6,0.55,2.23,1.35);
-  frame4->GetXaxis()->SetTitle("p^{max}_{T}");
-  frame4->GetXaxis()->SetTitleSize(0.07);
-  frame4->GetXaxis()->SetLabelSize(0.05);
+  //  frame4->GetXaxis()->SetTitle("p^{max}_{T}");
+  frame4->GetXaxis()->SetTitleSize(0.0);
+  frame4->GetXaxis()->SetLabelSize(0.0);
+  frame4->GetYaxis()->SetLabelSize(0.0);
   frame4->GetXaxis()->SetNdivisions(506);
   frame4->GetYaxis()->SetNdivisions(504);
 
@@ -301,9 +302,10 @@ void DrawCumulant()
   frame5->GetYaxis()->SetTitleSize(0.06);
   //  frame5->GetYaxis()->SetLabelSize(0.08);
   frame5->GetYaxis()->CenterTitle();
-  frame5->GetXaxis()->SetTitle("y_{min}");
+  //  frame5->GetXaxis()->SetTitle("y_{min}");
   frame5->GetXaxis()->SetTitleSize(0.05);
-  frame5->GetXaxis()->SetLabelSize(0.07);
+  frame5->GetXaxis()->SetLabelSize(0.0);
+  //  frame5->GetYaxis()->SetLabelSize(0.0);
   frame5->GetYaxis()->SetLabelOffset(0.012);
   frame5->GetXaxis()->SetNdivisions(506);
   frame5->GetYaxis()->SetNdivisions(504);
@@ -319,9 +321,10 @@ void DrawCumulant()
   gPad->SetTicks(1,1);
 
   TH1F * frame6 = gPad->DrawFrame(0.6,0.65,2.23,1.45);
-  frame6->GetXaxis()->SetTitle("p^{max}_{T}");
+  //  frame6->GetXaxis()->SetTitle("p^{max}_{T}");
   frame6->GetXaxis()->SetTitleSize(0.05);
-  frame6->GetXaxis()->SetLabelSize(0.07);
+  frame6->GetXaxis()->SetLabelSize(0.0);
+  frame6->GetYaxis()->SetLabelSize(0.0);
   frame6->GetXaxis()->SetNdivisions(506);
   frame6->GetYaxis()->SetNdivisions(504);
 

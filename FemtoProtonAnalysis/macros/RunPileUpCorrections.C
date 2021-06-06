@@ -1,7 +1,7 @@
 
 
 
-void RunAllPileUpCorrections(TString profileDir, TString outDir, TString pileup_best, TString pileup_minus, TString pileup_plus)
+void RunPileUpCorrections(TString profileDir, TString outDir, TString pileup_best, TString pileup_minus, TString pileup_plus)
 {
 
   gSystem->Load("../lib/momentCode.so");

@@ -3,8 +3,9 @@
 TString name(TString outDir, int i, int j)
 {
   TString prefix = "out";
-  TString l1[14] = {"n0p2_0","n0p3_0","n0p4_0","n0p5_0",
+  TString l1[8] = {"n0p2_0","n0p3_0","n0p4_0","n0p5_0",
 		    "n0p5_0_pt1","n0p5_0_pt2","n0p5_0_pt3","n0p5_0_pt4"};
+
   TString l2[11] = {"norm","SYS1","SYS2","SYS3","SYS4","SYS5","SYS6","SYS7","SYS8","SYS9","SYS10"};
 
   if ( j==-1 ) return TString::Format("%scumulants_%s.root",outDir.Data(),l1[i].Data());
@@ -19,7 +20,7 @@ void CalcSystematic(TString cumu_dir)
 
   cout << name(cumu_dir,0,0) << endl;
   
-  for ( int i=0; i<2;i++ )
+  for ( int i=0; i<8;i++ )
     {
       SystematicCalculation * sys_calc = new SystematicCalculation();
       
@@ -32,6 +33,8 @@ void CalcSystematic(TString cumu_dir)
       sys_calc->Calculate();
       
       sys_calc->WriteToOutFile( name(cumu_dir,i,-1) );
+      cout << "done!" << endl;
+      cout << endl;
       
       delete sys_calc;
     }

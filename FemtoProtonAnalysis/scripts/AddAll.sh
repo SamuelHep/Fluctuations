@@ -6,11 +6,11 @@ ptArray=("n0p5_0_pt1" "n0p5_0_pt2" "n0p5_0_pt3" "n0p5_0_pt4")
 
 for sys in ${sysArray[@]}; do
     for rap in ${rapArray[@]}; do
-	python MadAdder.py ${rap}${sys} profiles_${rap}${sys}.root
+	python MadAdder.py ${rap}_${sys} profiles_${rap}_${sys}.root
 	wait
     done 
     for pt in ${ptArray[@]}; do
-	python MadAdder.py ${pt}${sys} profiles_${pt}${sys}.root
+	python MadAdder.py ${pt}_${sys} profiles_${pt}_${sys}.root
 	wait
     done 
 

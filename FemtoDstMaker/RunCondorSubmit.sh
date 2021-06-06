@@ -94,5 +94,4 @@ echo "" >> $config_file
 echo "# Generated from RunCondorSubmit.sh" >> $config_file
 echo "FDST_OUT="$outDir >> $config_file
 
-
 star-submit-template -template CondorSubmit.xml -entities logDir=$logDir,outDir=$outDir,schedDir=$schedDir,goodRunList=$goodRunList,goodRunTxt=$goodRunTxt

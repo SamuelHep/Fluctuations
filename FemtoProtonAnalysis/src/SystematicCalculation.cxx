@@ -113,7 +113,7 @@ bool SystematicCalculation::AddSysSingle(TString filename)
   vector<TGraphErrors*>  gr_vec(_grnames.size(),(TGraphErrors*)NULL);
   int i=0;
 
-  cout << "File name = " << filename << endl;
+  cout << "Adding... " << filename << endl;
 
   for ( auto &gr : gr_vec )
     {
@@ -143,8 +143,8 @@ bool SystematicCalculation::AddSysPair(TString filename1,TString filename2)
   vector<TGraphErrors*>  gr_vec1(_grnames.size(),(TGraphErrors*)NULL);
   vector<TGraphErrors*>  gr_vec2(_grnames.size(),(TGraphErrors*)NULL);
 
-  cout << "File name 1 = " << filename1 << endl;
-  cout << "File name 2 = " << filename2 << endl;
+  cout << "Adding... " << filename1 << endl;
+  cout << "Adding... " << filename2 << endl;
       
   int i=0;
   for ( auto &gr : gr_vec1 )
@@ -171,7 +171,6 @@ bool SystematicCalculation::AddSysPair(TString filename1,TString filename2)
 	}
       i++;
     }
-
 
   _nsys_double_gr.push_back( gr_vec1 );
   _nsys_double_gr.push_back( gr_vec2 );
@@ -207,19 +206,19 @@ bool SystematicCalculation::Calculate()
 	  for ( int iSys=0;iSys<_nsys_single_gr.size();iSys++ )
 	    {
 	      double sys_y = _nsys_single_gr[iSys][iGr]->GetY()[iPt];
-	      cout << "single sys_y=" << sys_y << " mag=" << sqrt( pow( nom_y - sys_y, 2 )) << endl;
+	      //	      cout << "single sys_y=" << sys_y << " mag=" << sqrt( pow( nom_y - sys_y, 2 )) << endl;
 	      sys_err2+= pow( nom_y - sys_y, 2 );
 	    }
 
 	  for ( int iSys=0;iSys<_nsys_double_gr.size();iSys++ )
 	    {
 	      double sys_y_double = _nsys_double_gr[iSys][iGr]->GetY()[iPt];
-	      cout << "double sys_y=" << " mag=" << sqrt(pow( nom_y - sys_y_double, 2 )) << endl;
+	      //	      cout << "double sys_y=" << " mag=" << sqrt(pow( nom_y - sys_y_double, 2 )) << endl;
 	      sys_err2+= 0.5*(pow( nom_y - sys_y_double, 2 ));
 	    }
 
 	  double sys_err = sqrt( sys_err2 );
-	  cout << "nom x=" << nom_x << " nom_y=" << nom_y <<" sys error=" << sys_err << endl;
+	  //	  cout << "nom x=" << nom_x << " nom_y=" << nom_y <<" sys error=" << sys_err << endl;
 
 	  sys_gr->SetPointError(iPt,0,sys_err);
 	}

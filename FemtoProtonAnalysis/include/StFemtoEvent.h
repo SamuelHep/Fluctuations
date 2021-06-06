@@ -52,8 +52,8 @@ class StFemtoEvent : public TObject {
 
   void SetRunID(Int_t val){mRunID = val;};
   void SetFxtMult(Short_t val){mFxtMult = val;};
-  //  void SetFxtMultTofMatch(Float_t val){mFxtMultTofMatch = val;};
-  void SetFxtMultTofMatch(Short_t val){mFxtMultTofMatch = val;};
+  void SetFxtMultTofMatch(Float_t val){mFxtMultTofMatch = val;};
+  //void SetFxtMultTofMatch(Short_t val){mFxtMultTofMatch = val;};
   void SetFxtMult3(Short_t val){mFxtMult3 = val;};
 
   void SetVz(Float_t val){ mVz = val;};
@@ -74,8 +74,8 @@ class StFemtoEvent : public TObject {
   Int_t mRunID;
 
   Short_t mFxtMult;
-  //  Float_t mFxtMultTofMatch;
-  Short_t mFxtMultTofMatch;
+  Float_t mFxtMultTofMatch;
+  //Short_t mFxtMultTofMatch;
   Short_t mFxtMult3;
 
   Float_t mVz;

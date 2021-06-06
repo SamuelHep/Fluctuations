@@ -5,7 +5,7 @@
 #### EDIT BEFORE RUNNING ###########################################################
 
 #Make this a location with ~200 Gb ( like /star/data01/pwg/your_name/femtoAnalysis/ )
-output_parent_directory=/star/data01/pwg/sheppel/test_femtoAnalysis
+output_parent_directory=/star/data01/pwg/sheppel/codeTest
 
 # External files needed for running (probably don't need to change):
 tpc_efficiency_file=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/rootfiles/eff/tpc_efficiency.root
@@ -68,7 +68,7 @@ embed_dir=${output_parent_directory}/embed/
 tofmatch_dir=${output_parent_directory}/tofmatch/
 
 good_run_file_list=$maker_dir/filelist/3GeV_newProd_Fluct_GoodList.list
-good_runs_txt=$maker_dir/femtoRepo/FemtoDstMaker/filelist/good_3GeV.txt
+good_runs_txt=$maker_dir/filelist/good_3GeV.txt
 
 # Generate config file
 config_file=femto.config

@@ -158,6 +158,8 @@ int MomentEventLoop(
    
   //Proton Mass
   double mass=0.938272;
+
+  cout << "Events=" << nentries << endl;
   
   for (int iEntry=0;iEntry<nentries;iEntry++)
     {

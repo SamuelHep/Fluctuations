@@ -20,8 +20,8 @@
     <File>file:&inputParameter5;</File>
     <File>file:&inputParameter6;</File>
     <File>file:&workDir;/macros/RunEvents.C</File>
-    <File>file:&workDir;/rootfiles/eff/tpc_efficiency.root</File>
-    <File>file:&workDir;/rootfiles/eff/tof_efficiency_fineBinning.root</File> 
+    <File>file:&tpc_eff_file;</File>
+    <File>file:&tof_eff_file;</File> 
    </Package>
   </SandBox> 
 
@@ -29,6 +29,9 @@
     
     stardev
     setup 64bits
+
+    set tpc_eff = `basename &tpc_eff_file;`
+    set tof_eff = `basename &tof_eff_file;`
     
     set parameterList0 = `basename &inputParameter0;`
     set parameterList1 = `basename &inputParameter1;`
@@ -38,13 +41,13 @@
     set parameterList5 = `basename &inputParameter5;`
     set parameterList6 = `basename &inputParameter6;`
 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList0\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList1\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList2\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList3\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList4\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList5\",\"$INPUTFILE0\"\) 
-    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList6\",\"$INPUTFILE0\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList0\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\) 
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList1\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList2\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList3\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList4\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList5\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList6\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
 
     </command>
     
