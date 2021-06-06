@@ -1,5 +1,6 @@
 # Fluctuations
 STAR framework code to make .femto.root files and preform proton fluctuation analysis 
+(To view the markdown of the README file, go to https://github.com/SamuelHep/Fluctuations)
 
 ## FemtoDstMaker 
 Creates a reduced file format for the proton analysis.
@@ -48,4 +49,5 @@ For rootfiles with the results, look at cumulant*.root files in `FemtoProtonAnay
 
 ## External Packages ##
 
-To generate the centrality definition, efficiency curves and pileup correction file, you will need to use the external packages.
+To generate the centrality definition, efficiency curves and pileup correction file, you will need to use the external packages in `PackagesForExternalFiles`.
+Follow the README.md files in each directory to produce the external files.
