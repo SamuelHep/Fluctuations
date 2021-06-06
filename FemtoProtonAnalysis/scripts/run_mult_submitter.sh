@@ -1,41 +1,43 @@
 #!/bin/bash
 
+#Runs CondorSubmit.xml and converts picoDsts from catalog query to femtoDsts
 
 config_file=../../femto.config
 ############################################################################
 #RUNNING WITH CONFIG FILE
 ############################################################################
-if [ "$#" -eq 0 ]; then
 
-    source $config_file
+source $config_file
 
-    tofMatchDir=$PARENT_DIR/tofmatch
+MultDir=$PARENT_DIR/multiplicity_histograms
 
-    if [ ! -d $tofMatchDir ]; then
-	echo "Creating the log directory $tofMatchDir"
-	mkdir $tofMatchDir
-    fi
-
-    outDir=$tofMatchDir/out/
-    logDir=$tofMatchDir/log/
-    schedDir=$tofMatchDir/sched/
-    fDstDir=$FDST_OUT 
-
+if [ ! -d $MultDir ]; then
+    echo "Creating the mult directory $ProfileDir"
+    mkdir $MultDir
 fi
+
+outDir=$MultDir/out/
+logDir=$MultDir/log/
+schedDir=$MultDir/sched/
+fDstDir=$FDST_OUT 
+workDir=$ANA_DIR
+inputParameter=$workDir/input_parameters/parameter_n0p5_0_norm.list
 
 filelist=femto_3GeV.list
 #Check to make sure that the inputFileList exists 
 if [ ! -e $filelist ]; then
     readlink -f ${fDstDir}/*.root > femto_3GeV.list
-fi
-filelist=`readlink -f femto_3GeV.list`
 
-inputParameter=$ANA_DIR/input_parameters/parameter_n0p5_0_norm.list
-packageName=tof_eff
+fi
+
+filelist=`readlink -f femto_3GeV.list`
+echo $filelist
+
+packageName="multDists"
 
 #Check to Make sure the output Directory exists
 if [ ! -d $outDir ]; then
-    echo "Creating the log directory $outDir"
+    echo "Creating the out directory $outDir"
     mkdir $outDir
 fi
 
@@ -63,6 +65,5 @@ if [ ! -e $inputParameter ]; then
     exit 1
 fi
 
-workDir=$ANA_DIR
-
-star-submit-template -template ../condor_xml/TOFEfficiencyMaker.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,inputParameter=$inputParameter,packageName=$packageName,workDir=$workDir
+#echo $packageName
+star-submit-template -template ../condor_xml/MultSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,inputParameter=$inputParameter,packageName=$packageName,workDir=$workDir

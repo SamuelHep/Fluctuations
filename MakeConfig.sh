@@ -112,6 +112,15 @@ chmod u=rwx FemtoProtonAnalysis/scripts/sys_submitter.sh
 chmod u=rwx FemtoProtonAnalysis/scripts/hadd_embedding.sh
 chmod u=rwx FemtoProtonAnalysis/scripts/hadd_profiles.sh
 chmod u=rwx FemtoProtonAnalysis/scripts/run_corr_and_plot.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/run_tof_submitter.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/CalcTPCEfficiency.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/CalcTOFEfficiency.sh
+chmod u=rwx PackagesForExternalFiles/ProcessEmbedding/ProcessEmbedding.sh
+chmod x=rwx FemtoProtonAnalysis/scripts/hadd_mult.sh
+chmod x=rwx FemtoProtonAnalysis/scripts/run_mult_submitter.sh
+chmod x=rwx PackagesForExternalFiles/MCGlauberModel/scripts/runGlauberSimulation.sh
+chmod x=rwx PackagesForExternalFiles/MCGlauberModel/scripts/runCentralityDeterminationParameterScan.sh
+
 
 if [ $nocompile = true ]; then
     echo "Not compiling and exiting early."

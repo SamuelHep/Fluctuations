@@ -19,7 +19,7 @@ void ParseFile()
   base_input_file << "Mom "              << 2 << endl;
   base_input_file << "NHitsFitMin "      << 10 << endl;
   base_input_file << "NSigmaPionCut "    << 0 << endl;
-  base_input_file << "NSigmaProtonnCut " << 3 << endl;
+  base_input_file << "NSigmaProtonCut " << 3 << endl;
   base_input_file << "PtHigh "           << 2 << endl;
   base_input_file << "PtLow "            << 0.4 << endl;
   base_input_file << "RapHigh "          << 1.049 << endl;

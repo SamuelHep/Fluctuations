@@ -391,7 +391,7 @@ int MakeMultHists(
   StFemtoEvent * event = new StFemtoEvent();  
   tc->SetBranchAddress("StFemtoEvent",&event);
   
-  //Proton Mass
+  cout << "Entries=" << nentries << endl;
 
   for (int iEntry=0;iEntry<nentries;iEntry++)
     {

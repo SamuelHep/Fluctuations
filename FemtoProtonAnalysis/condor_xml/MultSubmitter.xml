@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+ <job maxFilesPerProcess="10" simulateSubmission="false">
+  <stdout URL="file:&logDir;/QA_$JOBINDEX.out" />
+  <stderr URL="file:&logDir;/QA_$JOBINDEX.err" /> 
+  
+  <Generator><Location>&schedDir;
+  </Location></Generator>
+    
+  <input URL="filelist:&filelist;"/> 
+    
+  <SandBox installer="ZIP">
+   <Package name="sched_&packageName;">
+    <File>file:&workDir;/lib/momentCode.so</File>
+    <File>file:&inputParameter;</File>
+    <File>file:&workDir;/macros/MakeMultHists.C</File>
+   </Package>
+  </SandBox> 
+
+    <command>
+    
+    stardev
+    setup 64bits
+    
+    set parameterList = `basename &inputParameter;`
+
+    root -b -l -q MakeMultHists.C\(\"$FILELIST\",\"$parameterList\",\"$JOBID\"\)
+
+    </command>
+    
+    <output fromScratch="*.root" toURL="file:&outDir;"/>
+ </job> 

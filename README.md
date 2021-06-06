@@ -46,3 +46,6 @@ A plot with the rapidity scan and pT scan is generated in `FemtoProtonAnaylsis/i
 
 For rootfiles with the results, look at cumulant*.root files in `FemtoProtonAnaylsis/rootfiles/cumulants/`
 
+## External Packages ##
+
+To generate the centrality definition, efficiency curves and pileup correction file, you will need to use the external packages.

@@ -5,7 +5,11 @@
 config_file=../../femto.config
 source $config_file
 
-tofmatch_dir=$TOFMATCH_DIR
+tofmatch_dir=$TOFMATCH_DIR/out/
+
+if [ ! -d $tofmatch_dir ]; then
+    echo "Directory doesnt exist, did you run ./run_tof_submitter.sh?"
+fi
 
 cp MadAdder.py $tofmatch_dir/.
 current_dir=`pwd`
