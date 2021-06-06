@@ -105,6 +105,14 @@ echo "GOOD_RUNS_TXT="$good_runs_txt >> $config_file
 # Change to 64bits #
 setup 64bits
 
+# Give permision to all of the scripts
+chmod u=rwx FemtoDstMaker/RunCondorSubmit.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/submit_full_analysis.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/sys_submitter.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/hadd_embedding.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/hadd_profiles.sh
+chmod u=rwx FemtoProtonAnalysis/scripts/run_corr_and_plot.sh
+
 if [ $nocompile = true ]; then
     echo "Not compiling and exiting early."
     exit
