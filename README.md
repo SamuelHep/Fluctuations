@@ -2,6 +2,9 @@
 STAR framework code to make .femto.root files and preform proton fluctuation analysis 
 (To view the markdown of the README file, go to https://github.com/SamuelHep/Fluctuations)
 
+Code organized and written by Samuel Heppelmann 
+with contributions from Yu Zhang, Toshihiro Nonaka and Chris Flores
+
 ## FemtoDstMaker 
 Creates a reduced file format for the proton analysis.
 
