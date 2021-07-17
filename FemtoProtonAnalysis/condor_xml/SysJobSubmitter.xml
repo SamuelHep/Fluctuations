@@ -19,6 +19,8 @@
     <File>file:&inputParameter4;</File>
     <File>file:&inputParameter5;</File>
     <File>file:&inputParameter6;</File>
+    <File>file:&inputParameter7;</File>
+    <File>file:&inputParameter8;</File>
     <File>file:&workDir;/macros/RunEvents.C</File>
     <File>file:&tpc_eff_file;</File>
     <File>file:&tof_eff_file;</File> 
@@ -40,6 +42,8 @@
     set parameterList4 = `basename &inputParameter4;`
     set parameterList5 = `basename &inputParameter5;`
     set parameterList6 = `basename &inputParameter6;`
+    set parameterList7 = `basename &inputParameter7;`
+    set parameterList8 = `basename &inputParameter8;`
 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList0\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\) 
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList1\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
@@ -48,6 +52,8 @@
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList4\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList5\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
     root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList6\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList7\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
+    root -b -l -q RunEvents.C\(\"$FILELIST\",\"$parameterList8\",\"$INPUTFILE0\",\"$tpc_eff\",\"$tof_eff\"\)
 
     </command>
     

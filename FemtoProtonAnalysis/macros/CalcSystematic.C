@@ -6,7 +6,7 @@ TString name(TString outDir, int i, int j)
   TString l1[8] = {"n0p2_0","n0p3_0","n0p4_0","n0p5_0",
 		    "n0p5_0_pt1","n0p5_0_pt2","n0p5_0_pt3","n0p5_0_pt4"};
 
-  TString l2[11] = {"norm","SYS1","SYS2","SYS3","SYS4","SYS5","SYS6","SYS7","SYS8","SYS9","SYS10"};
+  TString l2[13] = {"norm","SYS1","SYS2","SYS3","SYS4","SYS5","SYS6","SYS7","SYS8","SYS9","SYS10", "SYS11", "SYS12"};
 
   if ( j==-1 ) return TString::Format("%scumulants_%s.root",outDir.Data(),l1[i].Data());
   else return TString::Format("%s%s_%s_%s.root",outDir.Data(),prefix.Data(),l1[i].Data(),l2[j].Data());
@@ -25,12 +25,14 @@ void CalcSystematic(TString cumu_dir)
       SystematicCalculation * sys_calc = new SystematicCalculation();
       
       sys_calc->AddNominal( name(cumu_dir,i,0) );
-      sys_calc->AddSysPair( name(cumu_dir,i,1), name(cumu_dir,i,2) );
-      sys_calc->AddSysPair( name(cumu_dir,i,3), name(cumu_dir,i,4) );
-      sys_calc->AddSysPair( name(cumu_dir,i,5), name(cumu_dir,i,6) );
-      sys_calc->AddSysPair( name(cumu_dir,i,7), name(cumu_dir,i,8) );
+      sys_calc->AddSysPair( name(cumu_dir,i,1), name(cumu_dir,i,2) ,"nhitsfit");
+      sys_calc->AddSysPair( name(cumu_dir,i,3), name(cumu_dir,i,4), "eff" );
+      sys_calc->AddSysPair( name(cumu_dir,i,5), name(cumu_dir,i,6), "mass2" );
+      sys_calc->AddSysPair( name(cumu_dir,i,7), name(cumu_dir,i,8), "dca" );
+      sys_calc->AddSysPair( name(cumu_dir,i,9), name(cumu_dir,i,10), "pileup" );
+      sys_calc->AddSysPair( name(cumu_dir,i,11), name(cumu_dir,i,12), "cent" );
       
-      sys_calc->Calculate();
+      sys_calc->CalculateComplex();
       
       sys_calc->WriteToOutFile( name(cumu_dir,i,-1) );
       cout << "done!" << endl;

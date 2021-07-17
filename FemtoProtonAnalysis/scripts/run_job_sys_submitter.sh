@@ -11,6 +11,8 @@ inputParameter3=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/p
 inputParameter4=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p1_0_SYS4.list
 inputParameter5=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p1_0_SYS5.list
 inputParameter6=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p1_0_SYS6.list
+inputParameter7=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p1_0_SYS7.list
+inputParameter8=/star/u/sheppel/femtoRepo/FemtoProtonAnalysis/input_parameters/parameter_n0p1_0_SYS8.list
 packageName=norm_n0p1_0
 
 ./SysSubmitter.sh $outDir $logDir $schedDir $filelist $packageName $inputParameter0 $inputParameter1 $inputParameter2 $inputParameter3 $inputParameter4 $inputParameter5 $inputParameter6

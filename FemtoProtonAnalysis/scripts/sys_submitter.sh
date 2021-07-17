@@ -16,6 +16,8 @@ inputParameter3=$workDir/input_parameters/parameter_${name}_SYS3.list
 inputParameter4=$workDir/input_parameters/parameter_${name}_SYS4.list
 inputParameter5=$workDir/input_parameters/parameter_${name}_SYS5.list
 inputParameter6=$workDir/input_parameters/parameter_${name}_SYS6.list
+inputParameter7=$workDir/input_parameters/parameter_${name}_SYS7.list
+inputParameter8=$workDir/input_parameters/parameter_${name}_SYS8.list
 packageName=${name}
 
 echo ""
@@ -34,6 +36,8 @@ echo "     " $inputParameter3
 echo "     " $inputParameter4
 echo "     " $inputParameter5
 echo "     " $inputParameter6
+echo "     " $inputParameter7
+echo "     " $inputParameter8
 echo " "
 echo " package name: " $packageName
 echo " "
@@ -82,5 +86,5 @@ if [ ! -e $tof_eff_file ]; then
     exit 1
 fi
 
-star-submit-template -template ../condor_xml/SysJobSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,packageName=$packageName,workDir=$workDir,tpc_eff_file=$tpc_eff_file,tof_eff_file=$tof_eff_file,inputParameter0=$inputParameter0,inputParameter1=$inputParameter1,inputParameter2=$inputParameter2,inputParameter3=$inputParameter3,inputParameter4=$inputParameter4,inputParameter5=$inputParameter5,inputParameter6=$inputParameter6
+star-submit-template -template ../condor_xml/SysJobSubmitter.xml -entities logDir=$logDir,filelist=$filelist,outDir=$outDir,schedDir=$schedDir,packageName=$packageName,workDir=$workDir,tpc_eff_file=$tpc_eff_file,tof_eff_file=$tof_eff_file,inputParameter0=$inputParameter0,inputParameter1=$inputParameter1,inputParameter2=$inputParameter2,inputParameter3=$inputParameter3,inputParameter4=$inputParameter4,inputParameter5=$inputParameter5,inputParameter6=$inputParameter6,inputParameter7=$inputParameter7,inputParameter8=$inputParameter8
 

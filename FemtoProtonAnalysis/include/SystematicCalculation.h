@@ -16,6 +16,9 @@ class SystematicCalculation : public TObject  {
   std::vector<TGraphErrors*>  _sys_gr_vec;
   std::vector<std::vector<TGraphErrors*>>  _nsys_single_gr;
   std::vector<std::vector<TGraphErrors*>>  _nsys_double_gr;
+  std::vector<std::vector<TGraphErrors*>>  _nsys_double_gr1;
+  std::vector<std::vector<TGraphErrors*>>  _nsys_double_gr2;
+  std::vector<TString>  _label;
   std::vector<TString> _simple_names_norm;
   std::vector<TString> _simple_names_sys;
 
@@ -29,7 +32,9 @@ class SystematicCalculation : public TObject  {
   bool AddNominal(TString filename);
   bool AddSysSingle(TString filename);
   bool AddSysPair(TString filename1,TString filename2);
+  bool AddSysPair(TString filename1,TString filename2, TString label);
   bool Calculate();
+  bool CalculateComplex();
   bool CheckGraphVectors();
 
   bool WriteToOutFile(TString outfilename,bool rename=true);
