@@ -14,7 +14,7 @@ void RunPileUpCorrections(TString profileDir, TString outDir, TString pileup_bes
   TString pileup_labels[2] = {"SYS9","SYS10"};
   TString cbwc_labels[2] = {"SYS11","SYS12"};
 
-  for (int i=7;i<8;i++)
+  for (int i=0;i<8;i++)
     {
       for (int j=0;j<9;j++)
 	{
